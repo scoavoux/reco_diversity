@@ -1,0 +1,8 @@
+# options(repos="https://stat.ethz.ch/CRAN/")
+install.packages("GGally")
+install.packages("tidytable")
+install.packages("visNetwork")
+install.packages("tarchetypes")
+install.packages("here")
+install.packages("janitor")
+install.packages("kableExtra")
