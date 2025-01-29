@@ -22,6 +22,8 @@ list(
   ## Prepare streaming data ------
   tar_target(streaming_data_files,                  list_streaming_data_files()),
   tar_file(artists_to_remove_file,                  "data/artists_to_remove.csv"),
+  tar_file(artists_pop_file,                        "data/artists_pop.csv"),
+  tar_target(artists_pop,                           make_artists_pop(artists_pop_file)),
   tar_target(artists_to_remove,                     make_artists_to_remove(artists_to_remove_file)),
   tar_target(items,                                 make_items_data()),
   tar_target(genres,                                make_genre_data()),
@@ -34,12 +36,14 @@ list(
   # tar_target(user_genre_summary_data_raw ,       make_user_genre_summary_data(user_artist_per_period_merged_artists, genres, proportion=FALSE)),
   
   ## Prepare user data ------
-  tar_target(user_reco,                             compute_use_of_recommendations(user_artist_per_period)),
-  tar_target(user_artist_div,                       compute_artist_diversity(user_artist_per_period)),
-  tar_target(user_genre_div,                        compute_genre_diversity(user_artist_per_period, genres)),
-  tar_target(users,                                 make_user_period_level_data(user_reco,
-                                                                                user_artist_div,
-                                                                                user_genre_div)),
+  tar_target(user_reco,           compute_use_of_recommendations(user_artist_per_period)),
+  tar_target(user_artist_div,     compute_artist_diversity(user_artist_per_period)),
+  tar_target(user_genre_div,      compute_genre_diversity(user_artist_per_period, genres)),
+  tar_target(user_pop_div,        compute_pop_diversity(user_artist_per_period, artists_pop)),
+  tar_target(users,               make_user_period_level_data(user_reco,
+                                                              user_artist_div,
+                                                              user_genre_div,
+                                                              user_pop_div)),
   
   ## Descriptive stats ------
   
@@ -49,8 +53,7 @@ list(
                                 pattern = model_params),
   tar_target(models_coefs,      extract_treatment_effect(models_fit),
                                 pattern = models_fit),
-  tar_target(models_coefs, bind_rows(models_coefs_each)),
-  
+
   ## Output ------
   tar_target(gg_treatment_effect,  plot_treatment_effect(models_coefs))
   )

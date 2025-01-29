@@ -126,4 +126,10 @@ make_genre_data <- function(){
 }
 
 
-
+make_artists_pop <- function(artists_pop_file){
+  s3 <- initialize_s3()
+  artists_pop <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/artists_pop.csv")$Body %>% 
+    read_csv(col_select = c("artist_id", "nb_fans"))
+  artists_pop <- artists_pop %>% filter(!is.na(nb_fans))
+  return(artists_pop)
+}
