@@ -80,7 +80,20 @@ make_model_params <- function(users, model_params){
          scale = TRUE,
          treatment = "separate",
          period_fe = TRUE,
+         ind_fe = TRUE),
+    list(diversity = "nb_longtail_pond",
+         log = FALSE,
+         scale = TRUE,
+         treatment = "pooled",
+         period_fe = TRUE,
+         ind_fe = TRUE),
+    list(diversity = "nb_longtail_pond",
+         log = FALSE,
+         scale = TRUE,
+         treatment = "separate",
+         period_fe = TRUE,
          ind_fe = TRUE)
+    
     
   )
   return(model_params)

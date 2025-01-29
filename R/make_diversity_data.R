@@ -49,13 +49,16 @@ compute_pop_diversity <- function(user_artist_per_period,
     group_by(hashed_id, period) %>% 
     mutate(f = l_play / sum(l_play)) %>% 
     summarize(mean_pop = sum(f*nb_fans),
-              nb_longtail = sum(f*(nb_fans < long_tail_limit)))
+              nb_longtail = sum(nb_fans < long_tail_limit),
+              nb_longtail_pond = sum(f*(nb_fans < long_tail_limit)))
   return(pop_div)
 }
 
 compute_legitimacy_diversity <- function(user_artist_per_period){}
 
-make_user_period_level_data <- function(..., min_hours_played = 2){
+make_user_period_level_data <- function(..., 
+                                        min_hours_played = 2, 
+                                        min_artist_played = 1){
   l <- list(...)
   users_raw <- l[[1]]
   for(i in 2:length(l)){
@@ -64,7 +67,8 @@ make_user_period_level_data <- function(..., min_hours_played = 2){
   }
   # we add a constraint: to keep a user
   users_raw <- users_raw %>% 
-    filter(total_play_l > min_hours_played)
+    filter(total_play_l > min_hours_played,
+           n_artist > min_artist_played)
   
   return(users_raw)
 }
