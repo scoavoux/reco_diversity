@@ -35,6 +35,10 @@ list(
   # tar_target(user_genre_summary_data_prop,       make_user_genre_summary_data(user_artist_per_period_merged_artists, genres, proportion=TRUE)),
   # tar_target(user_genre_summary_data_raw ,       make_user_genre_summary_data(user_artist_per_period_merged_artists, genres, proportion=FALSE)),
   
+  tar_target(unique_artists,      make_unique_artists(user_artist_per_period), 
+             format = "file",
+             repository = "local"),
+  
   ## Prepare user data ------
   tar_target(user_reco,           compute_use_of_recommendations(user_artist_per_period)),
   tar_target(user_artist_div,     compute_artist_diversity(user_artist_per_period)),
@@ -55,5 +59,7 @@ list(
                                 pattern = models_fit),
 
   ## Output ------
-  tar_target(gg_treatment_effect,  plot_treatment_effect(models_coefs))
+  tar_target(gg_treatment_effect,  plot_treatment_effect(models_coefs), 
+             format = "file",
+             repository = "local")
   )

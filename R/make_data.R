@@ -133,3 +133,20 @@ make_artists_pop <- function(artists_pop_file){
   artists_pop <- artists_pop %>% filter(!is.na(nb_fans))
   return(artists_pop)
 }
+
+make_unique_artists <- function(user_artist_per_period){
+  require(arrow)
+  filename <- "data/temp/unique_artists.csv"
+  ua <- user_artist_per_period %>% 
+    distinct(artist_id)
+  s3 <- initialize_s3()
+  ar1 <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/items/artist.snappy.parquet")$Body %>% 
+    read_parquet(col_select = c(1,2))
+  ar2 <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/items/artists_data.snappy.parquet")$Body %>% 
+    read_parquet(col_select = c(1,2))
+  ar <- bind_rows(ar2, ar1) %>% 
+    distinct()
+  left_join(ua, ar) %>% 
+    write_csv(filename)
+  return(filename)
+}
