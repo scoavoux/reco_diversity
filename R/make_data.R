@@ -72,13 +72,14 @@ make_user_artist_per_period_table_onefile <- function(file, items, interval = "m
       select(-media_type)
   }
   streams <- streams %>% 
-    filter(hashed_id %in% filter(users, is_in_control_group)$hashed_id) %>% 
-    mutate(year = year(as_datetime(as.integer(ts_listen))),
-           period = breakdown_time(ts_listen, interval),
-           lt = ifelse(listening_time < 0, 0, listening_time)) %>% 
-    filter(year > 2017, 
+    filter(hashed_id %in% filter(users, is_in_control_group)$hashed_id,
+           # filter only music played from 2017/01/01
+           ts_listen >= 1483228800,
            is_listened == 1) %>% 
-    select(-ts_listen, -listening_time, -year)
+    mutate(ts_listen = as.integer(ts_listen)) %>% 
+    mutate(period = breakdown_time(ts_listen, interval),
+           lt = ifelse(listening_time < 0, 0, listening_time)) %>% 
+    select(-ts_listen, -listening_time)
   
   
   user_artist_per_period <- streams %>% 
