@@ -2,6 +2,7 @@
 library(targets)
 library(tarchetypes)
 
+
 tar_option_set(
   packages = c("paws", "tidyverse", "arrow"),
   repository = "aws",
@@ -38,10 +39,15 @@ list(
   tar_target(user_genre_div,                        compute_genre_diversity(user_artist_per_period, genres)),
   tar_target(users,                                 make_user_period_level_data(user_reco,
                                                                                 user_artist_div,
-                                                                                user_genre_div))
+                                                                                user_genre_div)),
+  
   ## Descriptive stats ------
   
   ## Run main analysis ------
-  
-  
-)
+  tar_target(model_params,      make_model_params()),
+  tar_target(models_fit,        fit_model(users, model_params),
+                                pattern = model_params),
+  tar_target(models_coefs_each, extract_treatment_effect(models_fit),
+                                pattern = models_fit),
+  tar_target(models_coefs, bind_rows(models_coefs_each))
+  )
