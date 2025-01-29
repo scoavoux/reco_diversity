@@ -78,3 +78,30 @@ extract_treatment_effect <- function(model){
   result
 }
 
+plot_treatment_effect <- function(models_coefs){
+  theme_set(theme_minimal())
+  models_coefs <- models_coefs %>% 
+    mutate(dependant = recode_vars(dependant, "cleandiversity"),
+           treatment = recode_vars(treatment, "cleanreco") %>% 
+             factor(levels = c("All", "Algorithmic", "Editorial")))
+  
+  gg <- ggplot(models_coefs, aes(y = dependant,
+                           x = treatment_effect,
+                           xmin = treatment_effect - 2*treatment_effect_se,
+                           xmax = treatment_effect + 2*treatment_effect_se,
+                           shape = treatment,
+                           color = treatment)) +
+    geom_point(position = position_dodge(width = .5)) + 
+    geom_linerange(position = position_dodge(width = .5)) +
+    geom_vline(xintercept = 0) +
+    scale_color_brewer(palette = "Dark2") +
+    labs(x = "Effect of recommendation", 
+         y = "Diversity",
+         shape = "Recommendation",
+         color = "Recommendation") +
+    theme(legend.position = "bottom")
+  filename <- "output/gg_treatment_effect.pdf"
+  ggsave(filename, gg)
+  return(filename)
+}
+

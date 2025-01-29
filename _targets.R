@@ -47,7 +47,10 @@ list(
   tar_target(model_params,      make_model_params()),
   tar_target(models_fit,        fit_model(users, model_params),
                                 pattern = model_params),
-  tar_target(models_coefs_each, extract_treatment_effect(models_fit),
+  tar_target(models_coefs,      extract_treatment_effect(models_fit),
                                 pattern = models_fit),
-  tar_target(models_coefs, bind_rows(models_coefs_each))
+  tar_target(models_coefs, bind_rows(models_coefs_each)),
+  
+  ## Output ------
+  tar_target(gg_treatment_effect,  plot_treatment_effect(models_coefs))
   )
