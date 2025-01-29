@@ -38,7 +38,19 @@ compute_genre_diversity <- function(user_artist_per_period, genres){
     summarize(div_genre = compute_div(f),
               n_genre   = n())
   return(genre_div)
-  
+}
+
+compute_pop_diversity <- function(user_artist_per_period, 
+                                  artists_pop,
+                                  long_tail_quantile=.9){
+  long_tail_limit <- quantile(artists_pop$nb_fans, long_tail_quantile)
+  pop_div <- user_artist_per_period %>% 
+    inner_join(artists_pop) %>% 
+    group_by(hashed_id, period) %>% 
+    mutate(f = l_play / sum(l_play)) %>% 
+    summarize(mean_pop = sum(f*nb_fans),
+              nb_longtail = sum(f*(nb_fans < long_tail_limit)))
+  return(pop_div)
 }
 
 compute_legitimacy_diversity <- function(user_artist_per_period){}
