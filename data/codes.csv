@@ -2,6 +2,7 @@ scheme,orig,replacement
 cleanreco,"c4_reco","All"
 cleanreco,"c4_reco_algo","Algorithmic"
 cleanreco,"c4_edito","Editorial"
+cleandiversity,"div_regional","Country diversity"
 cleandiversity,"div_genre","Genre diversity"
 cleandiversity,"f_woman","Share of female artists"
 cleandiversity,"div_artist","Artist diversity"

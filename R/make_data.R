@@ -169,3 +169,26 @@ make_artists_gender <- function(unique_artists){
     slice(1, .by = artist_id)
   return(res)
 }
+
+make_artists_area <- function(unique_artists){
+  # 
+  s3 <- initialize_s3()
+  mbid <- s3$get_object(Bucket = "scoavoux", Key = "musicbrainz/mbid_deezerid.csv")$Body %>% 
+    read_csv()
+  area <- s3$get_object(Bucket = "scoavoux", Key = "musicbrainz/mbid_area.csv")$Body %>% 
+    read_csv() %>% 
+    rename(mbid = "gid", area_id = "area")
+  area_names <- s3$get_object(Bucket = "scoavoux", Key = "musicbrainz/area_names.csv")$Body %>% 
+    read_csv() %>% 
+    rename(area_id = "id", area_name = "name")
+  ## check out area types also
+  ## we restrict to countries:
+  area_names <- area_names %>% 
+    filter(type == 1)
+  area <- inner_join(area, area_names)
+  res <- inner_join(unique_artists, mbid) %>% 
+    inner_join(area) %>% 
+    slice(1, .by = artist_id) %>% 
+    select(artist_id, area_name)
+  return(res)
+}
