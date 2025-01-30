@@ -69,6 +69,18 @@ make_model_params <- function(users, model_params){
          treatment = "separate",
          period_fe = TRUE,
          ind_fe = TRUE),
+    list(diversity = "mean_unique_users",
+         log = TRUE,
+         scale = TRUE,
+         treatment = "pooled",
+         period_fe = TRUE,
+         ind_fe = TRUE),
+    list(diversity = "mean_unique_users",
+         log = TRUE,
+         scale = TRUE,
+         treatment = "separate",
+         period_fe = TRUE,
+         ind_fe = TRUE),
     list(diversity = "f_longtail",
          log = FALSE,
          scale = TRUE,
@@ -157,13 +169,13 @@ plot_treatment_effect <- function(models_coefs){
     geom_linerange(position = position_dodge(width = .5)) +
     geom_vline(xintercept = 0) +
     scale_color_brewer(palette = "Dark2") +
-    labs(x = "Effect of recommendation", 
+    labs(x = "Effect of recommendation (standard deviation)", 
          y = "Diversity",
          shape = "Recommendation",
          color = "Recommendation") +
     theme(legend.position = "bottom")
   filename <- "output/gg_treatment_effect.pdf"
-  ggsave(filename, gg)
+  ggsave(filename, gg, width=19, height=12, units = "cm")
   return(filename)
 }
 

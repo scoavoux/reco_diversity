@@ -65,6 +65,25 @@ compute_pop_diversity <- function(user_artist_per_period,
   return(pop_div)
 }
 
+compute_endo_pop_diversity <- function(user_artist_per_period){
+  # for each artist/period...
+  # the number of unique consumers 
+  uu <- user_artist_per_period %>% 
+    count(artist_id, period)
+  uu <- uu %>% 
+    mutate(n_prev = lag(n)) %>% 
+    select(-n)
+  # now lag that
+  # and compute weighted mean for each user/period
+  endopop_div <- user_artist_per_period %>% 
+    left_join(uu) %>% 
+    group_by(hashed_id, period) %>% 
+    mutate(l = l_play/sum(l_play))
+    summarize(mean_unique_users = sum(l * n_prev))
+  return(endopop_div)
+  
+}
+
 compute_gender_diversity <- function(user_artist_per_period, gender){
   gender_div <- user_artist_per_period %>% 
     inner_join(gender) %>% 
