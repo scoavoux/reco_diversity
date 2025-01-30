@@ -49,9 +49,18 @@ compute_pop_diversity <- function(user_artist_per_period,
     group_by(hashed_id, period) %>% 
     mutate(f = l_play / sum(l_play)) %>% 
     summarize(mean_pop = sum(f*nb_fans),
-              nb_longtail = sum(nb_fans < long_tail_limit),
+              f_longtail = sum(nb_fans < long_tail_limit) / n(),
               nb_longtail_pond = sum(f*(nb_fans < long_tail_limit)))
   return(pop_div)
+}
+
+compute_gender_diversity <- function(user_artist_per_period, gender){
+  gender_div <- user_artist_per_period %>% 
+    inner_join(gender) %>% 
+    group_by(hashed_id, period) %>% 
+    mutate(f = l_play / sum(l_play)) %>% 
+    summarize(f_woman = sum(f * gender == 2))
+  return(gender_div)
 }
 
 compute_legitimacy_diversity <- function(user_artist_per_period){}

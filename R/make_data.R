@@ -136,7 +136,6 @@ make_artists_pop <- function(artists_pop_file){
 
 make_unique_artists <- function(user_artist_per_period){
   require(arrow)
-  filename <- "data/temp/unique_artists.csv"
   ua <- user_artist_per_period %>% 
     distinct(artist_id)
   s3 <- initialize_s3()
@@ -146,7 +145,27 @@ make_unique_artists <- function(user_artist_per_period){
     read_parquet(col_select = c(1,2))
   ar <- bind_rows(ar2, ar1) %>% 
     distinct()
-  left_join(ua, ar) %>% 
+  ua <- left_join(ua, ar)
+  return(ua)
+}
+
+export_unique_artists <- function(unique_artists){
+  filename <- "data/temp/unique_artists.csv"
+  unique_artists %>% 
     write_csv(filename)
-  return(filename)
+  return(filename) 
+}
+
+make_artists_gender <- function(unique_artists){
+  # 
+  s3 <- initialize_s3()
+  gender <- s3$get_object(Bucket = "scoavoux", Key = "musicbrainz/mbz_gender.csv")$Body %>% 
+    read_csv() %>% 
+    rename(mbid = "gid")
+  mbid <- s3$get_object(Bucket = "scoavoux", Key = "musicbrainz/mbid_deezerid.csv")$Body %>% 
+    read_csv()
+  res <- inner_join(unique_artists, inner_join(mbid, gender)) %>% 
+    select(artist_id, gender) %>% 
+    slice(1, .by = artist_id)
+  return(res)
 }
