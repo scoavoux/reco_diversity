@@ -65,7 +65,7 @@ compute_pop_diversity <- function(user_artist_per_period,
   return(pop_div)
 }
 
-compute_endo_pop_diversity <- function(user_artist_per_period){
+compute_endo_pop_diversity <- function(user_artist_per_period, long_tail_limit = .9){
   # for each artist/period...
   # the number of unique consumers 
   uu <- user_artist_per_period %>% 
@@ -78,8 +78,11 @@ compute_endo_pop_diversity <- function(user_artist_per_period){
   endopop_div <- user_artist_per_period %>% 
     left_join(uu) %>% 
     group_by(hashed_id, period) %>% 
-    mutate(l = l_play/sum(l_play)) %>% 
-    summarize(mean_unique_users = sum(l * n_prev))
+    mutate(l = l_play/sum(l_play),
+           long_tail_limit_threshold = quantile(n_prev, long_tail_limit)) %>% 
+    summarize(mean_unique_users = sum(l * n_prev),
+              f_endo_longtail = sum(n_prev < long_tail_limit_threshold) / n(),
+              nb_endo_longtail_pond = sum(f*(n_prev < long_tail_limit_threshold)))
   return(endopop_div)
   
 }
