@@ -61,7 +61,8 @@ list(
   ## Descriptive stats ------
   
   ## Run main analysis ------
-  tar_target(model_params,      make_model_params()),
+  tar_file(model_params_file,   "data/model_params.yaml"),
+  tar_target(model_params,      make_model_params(model_params_file)),
   tar_target(models_fit,        fit_model(users, model_params),
                                 pattern = model_params),
   tar_target(models_coefs,      extract_treatment_effect(models_fit),
