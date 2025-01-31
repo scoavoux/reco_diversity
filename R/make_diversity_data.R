@@ -78,7 +78,7 @@ compute_endo_pop_diversity <- function(user_artist_per_period){
   endopop_div <- user_artist_per_period %>% 
     left_join(uu) %>% 
     group_by(hashed_id, period) %>% 
-    mutate(l = l_play/sum(l_play))
+    mutate(l = l_play/sum(l_play)) %>% 
     summarize(mean_unique_users = sum(l * n_prev))
   return(endopop_div)
   
