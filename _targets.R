@@ -5,6 +5,7 @@ library(tarchetypes)
 
 tar_option_set(
   packages = c("paws", "tidyverse", "arrow"),
+  format = "qs",
   repository = "aws",
   resources = tar_resources(
     aws = tar_resources_aws(
