@@ -22,9 +22,10 @@ tar_source("R")
 list(
   ## Prepare streaming data ------
   tar_target(streaming_data_files,                  list_streaming_data_files()),
-  tar_file(artists_to_remove_file,                  "data/artists_to_remove.csv"),
-  tar_file(artists_pop_file,                        "data/artists_pop.csv"),
-  tar_target(artists_pop,                           make_artists_pop(artists_pop_file)),
+  tar_target(artists_to_remove_file,                  "data/artists_to_remove.csv",
+             format = "file",
+             repository = "local"),
+  tar_target(artists_pop,                           make_artists_pop()),
   tar_target(artists_to_remove,                     make_artists_to_remove(artists_to_remove_file)),
   tar_target(items,                                 make_items_data()),
   tar_target(genres,                                make_genre_data()),
@@ -62,7 +63,9 @@ list(
   ## Descriptive stats ------
   
   ## Run main analysis ------
-  tar_file(model_params_file,   "data/model_params.yaml"),
+  tar_target(model_params_file, "data/model_params.yaml", 
+             format = "file", 
+             repository = "local"),
   tar_target(model_params,      make_model_params(model_params_file)),
   tar_target(models_fit,        fit_model(users, model_params),
                                 pattern = model_params),
@@ -70,7 +73,10 @@ list(
                                 pattern = models_fit),
 
   ## Output ------
-  tar_target(gg_treatment_effect,  plot_treatment_effect(models_coefs), 
+  tar_target(gg_treatment_effect,  plot_treatment_effect(models_coefs, model_params), 
+             format = "file",
+             repository = "local"),
+  tar_target(descriptive_stats,    compute_descriptive_stats(user_artist_per_period),
              format = "file",
              repository = "local")
   )
