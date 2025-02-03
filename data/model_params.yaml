@@ -4,117 +4,137 @@
   treatment: pooled
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: div_artist
   log: yes
   scale: yes
   treatment: separate
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: div_genre
   log: yes
   scale: yes
   treatment: pooled
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: div_genre
   log: yes
   scale: yes
   treatment: separate
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: mean_pop
   log: yes
   scale: yes
   treatment: pooled
   period_fe: yes
   ind_fe: yes
+  inverted: TRUE
 - diversity: mean_pop
   log: yes
   scale: yes
   treatment: separate
   period_fe: yes
   ind_fe: yes
+  inverted: TRUE
 - diversity: mean_unique_users
   log: yes
   scale: yes
   treatment: pooled
   period_fe: yes
   ind_fe: yes
+  inverted: TRUE
 - diversity: mean_unique_users
   log: yes
   scale: yes
   treatment: separate
   period_fe: yes
   ind_fe: yes
+  inverted: TRUE
 - diversity: f_longtail
   log: no
   scale: yes
   treatment: pooled
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: f_longtail
   log: no
   scale: yes
   treatment: separate
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: nb_longtail_pond
   log: no
   scale: yes
   treatment: pooled
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: nb_longtail_pond
   log: no
   scale: yes
   treatment: separate
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: f_endo_longtail
   log: no
   scale: yes
   treatment: pooled
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: f_endo_longtail
   log: no
   scale: yes
   treatment: separate
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: nb_endo_longtail_pond
   log: no
   scale: yes
   treatment: pooled
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: nb_endo_longtail_pond
   log: no
   scale: yes
   treatment: separate
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: div_regional
   log: yes
   scale: yes
   treatment: pooled
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: div_regional
   log: yes
   scale: yes
   treatment: separate
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: f_woman
   log: no
   scale: yes
   treatment: pooled
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE
 - diversity: f_woman
   log: no
   scale: yes
   treatment: separate
   period_fe: yes
   ind_fe: yes
+  inverted: FALSE

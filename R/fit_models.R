@@ -53,13 +53,26 @@ extract_treatment_effect <- function(model){
   result
 }
 
-plot_treatment_effect <- function(models_coefs){
+plot_treatment_effect <- function(models_coefs, model_params){
   theme_set(theme_minimal())
+  tar_load(model_params)
+  tar_load(models_coefs)
+  # invert coefs
+  model_params <- bind_rows(model_params) %>%
+    select(dependant = "diversity", inverted) %>% 
+    distinct()
+  models_coefs <- models_coefs %>%
+    left_join(model_params) %>% 
+    mutate(treatment_effect = ifelse(inverted, -1 * treatment_effect, treatment_effect))
+  
   models_coefs <- models_coefs %>% 
-    mutate(dependant = recode_vars(dependant, "cleandiversity"),
+    mutate(dependant = recode_vars(dependant, "cleandiversity") %>% 
+             str_replace_all("\\\\n", "\n"),
+           dependant = ifelse(inverted, paste0(dependant, "*"), dependant),
            treatment = recode_vars(treatment, "cleanreco") %>% 
              factor(levels = c("All", "Algorithmic", "Editorial")))
   
+
   gg <- ggplot(models_coefs, aes(y = dependant,
                            x = treatment_effect,
                            xmin = treatment_effect - 2*treatment_effect_se,
