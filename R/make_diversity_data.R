@@ -79,10 +79,10 @@ compute_endo_pop_diversity <- function(user_artist_per_period, long_tail_limit =
     left_join(uu) %>% 
     group_by(hashed_id, period) %>% 
     mutate(l = l_play/sum(l_play),
-           long_tail_limit_threshold = quantile(n_prev, long_tail_limit)) %>% 
+           long_tail_limit_threshold = quantile(n_prev, long_tail_limit, na.rm=TRUE)) %>% 
     summarize(mean_unique_users = sum(l * n_prev),
-              f_endo_longtail = sum(n_prev < long_tail_limit_threshold) / n(),
-              nb_endo_longtail_pond = sum(f*(n_prev < long_tail_limit_threshold)))
+              f_endo_longtail = sum(n_prev < long_tail_limit_threshold, na.rm = TRUE) / n(),
+              nb_endo_longtail_pond = sum(f*(n_prev < long_tail_limit_threshold), na.rm=TRUE))
   return(endopop_div)
   
 }
