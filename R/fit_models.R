@@ -103,7 +103,7 @@ compute_descriptive_stats <- function(user_artist_per_period){
   filename <- "output/stat_desc.tex"
   tb %>% 
     pivot_longer(everything()) %>% 
-    kbl(format = "latex", digits = 2, booktabs = TRUE, caption = caption) %>% 
+    kbl(format = "latex", digits = 2, booktabs = TRUE) %>% 
     save_kable(file = filename)
   return(filename)
 }
