@@ -1,14 +1,14 @@
-fit_model <- function(users, 
+fit_model <- function(user_period_div, 
                       model_params){
   require(fixest)
   div_var <- sym(model_params[[1]]$diversity[[1]])
 
   if( model_params[[1]]$log){
-    users <- users %>%
+    user_period_div <- user_period_div %>%
       mutate({{ div_var }} := log({{ div_var }} + 1))
   }
   if( model_params[[1]]$scale){
-    users <- users %>%
+    user_period_div <- user_period_div %>%
       mutate({{ div_var }} := scale({{ div_var }}))
   }
   if( model_params[[1]]$treatment[[1]] == "pooled") {
@@ -25,18 +25,13 @@ fit_model <- function(users,
   char_div <-  model_params[[1]]$diversity[[1]]
   to_fit <- str_glue("{char_div} ~ {char_treatment} + log(total_play_l) {char_fe}") %>% 
     str_trim()
-  feols(as.formula(to_fit), data = users)
-}
-fit_model2 <- function(params, users){
-  str(params[[1]])
+  feols(as.formula(to_fit), data = user_period_div)
 }
 
 make_model_params <- function(model_params_file){
   model_params <- yaml::read_yaml(model_params_file)
   return(model_params)
 }
-
-#fit_model(users, model_params[[1]])
 
 extract_treatment_effect <- function(model){
   require(fixest)
@@ -50,7 +45,7 @@ extract_treatment_effect <- function(model){
                    treatment = names(co),
                    treatment_effect = co,
                    treatment_effect_se = se)
-  result
+  return(result)
 }
 
 plot_treatment_effect <- function(models_coefs, model_params){
