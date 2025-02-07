@@ -33,6 +33,7 @@ make_items_data <- function(){
   items_new <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/items/song.snappy.parquet")$Body %>% 
     read_parquet(col_select = c("song_id", "artist_id"))  
   items <- bind_rows(items_old, items_new) %>% 
+    filter(!is.na(artist_id)) %>% 
     distinct(song_id, .keep_all = TRUE)
   return(items)
 }
@@ -92,15 +93,16 @@ make_artists_to_remove <- function(artists_to_remove_file){
 }
 
 ## We bind each of the previous datasets together and compute summary stats.
-merge_user_artist_per_period_table <- function(..., artists_to_remove){
+make_user_artist_per_period <- function(user_song_per_period, items, artists_to_remove){
   require(tidytable)
-  streams <- bind_rows(...) %>% 
+  streams <- user_song_per_period %>% 
+    inner_join(items) %>% 
+    anti_join(artists_to_remove) %>% 
+    group_by(hashed_id, period, artist_id, context_4) %>% 
     summarise(l_play = sum(l_play),
-              n_play = sum(n_play),
-              .by = c(hashed_id, period, artist_id, context_4)) %>% 
+              n_play = sum(n_play)) %>% 
     arrange(period) %>% 
-    mutate(period = factor(period)) %>% 
-    anti_join(artists_to_remove)
+    mutate(period = factor(period))
   return(streams)
 }
 

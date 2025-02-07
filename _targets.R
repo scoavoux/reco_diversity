@@ -43,9 +43,9 @@ list(
                                                                                       interval = "week"), 
                                                     pattern = streaming_data_files),
   tar_target(user_song_per_period,                  merge_user_song_per_period(user_song_per_period_onefile)),
-  tar_target(user_artist_per_period,                merge_user_artist_per_period_table(user_artist_per_period_onefile, artists_to_remove = artists_to_remove)),
-  # tar_target(user_genre_summary_data_prop,       make_user_genre_summary_data(user_artist_per_period_merged_artists, genres, proportion=TRUE)),
-  # tar_target(user_genre_summary_data_raw ,       make_user_genre_summary_data(user_artist_per_period_merged_artists, genres, proportion=FALSE)),
+  tar_target(user_artist_per_period,                make_user_artist_per_period(user_song_per_period, items, artists_to_remove)),
+  # tar_target(user_genre_summary_data_prop,        make_user_genre_summary_data(user_artist_per_period_merged_artists, genres, proportion=TRUE)),
+  # tar_target(user_genre_summary_data_raw ,        make_user_genre_summary_data(user_artist_per_period_merged_artists, genres, proportion=FALSE)),
   
   tar_target(unique_artists,      make_unique_artists(user_artist_per_period)),
   tar_target(unique_artists_csv,  export_unique_artists(unique_artists), 
