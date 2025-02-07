@@ -96,6 +96,23 @@ compute_gender_diversity <- function(user_artist_per_period, gender){
   return(gender_div)
 }
 
+compute_acoustic_diversity <- function(user_song_per_period, acoustic_features){
+  require(tidytable)
+  acoustic_diversity <- user_song_per_period %>% 
+    group_by(hashed_id, period, song_id) %>% 
+    tidytable::summarize(l_play = sum(l_play)) %>% 
+    ungroup() %>% 
+    inner_join(acoustic_features, by = "song_id") %>% 
+    group_by(hashed_id, period) %>% 
+    mutate(l = l_play / sum(l_play)) %>% 
+    tidytable::summarize(across(danceability:tempo, list(mean = ~ Hmisc::wtd.mean(.x, l, normwt = FALSE), 
+                                              sd   = ~ sqrt(Hmisc::wtd.var(.x, l, normwt = FALSE))
+                                              )
+                     )
+              )
+    return(acoustic_diversity)
+}
+
 compute_legitimacy_diversity <- function(user_artist_per_period){}
 
 make_user_period_level_data <- function(..., 
