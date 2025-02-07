@@ -83,7 +83,7 @@ compute_endo_pop_diversity <- function(user_artist_per_period, long_tail_limit =
     summarize(l = sum(l_play)) %>% 
     left_join(uu) %>% 
     group_by(hashed_id, period) %>% 
-    mutate(f = l_play/sum(l_play),
+    mutate(f = l/sum(l),
            long_tail_limit_threshold = quantile(n_prev, long_tail_limit, na.rm=TRUE)) %>% 
     summarize(mean_unique_users = sum(f * n_prev),
               f_endo_longtail = sum(n_prev < long_tail_limit_threshold, na.rm = TRUE) / n(),
@@ -102,7 +102,7 @@ compute_gender_diversity <- function(user_artist_per_period, gender){
 
 compute_acoustic_diversity <- function(user_song_per_period, acoustic_features){
   require(tidytable)
-  acoustic_diversity <- up %>% 
+  acoustic_diversity <- user_song_per_period %>% 
     group_by(hashed_id, period, song_id) %>% 
     summarize(l = sum(l_play)) %>% 
     ungroup() %>% 
@@ -131,6 +131,7 @@ make_user_period_level_data <- function(...,
   }
   # we add a constraint: to keep a user
   users_raw <- users_raw %>% 
+    ungroup() %>% 
     filter(total_play_l > min_hours_played,
            n_artist > min_artist_played)
   
