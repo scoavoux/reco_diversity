@@ -19,8 +19,10 @@ compute_use_of_recommendations <- function(user_artist_per_period){
 
 compute_artist_diversity <- function(user_artist_per_period){
   artist_div <- user_artist_per_period %>% 
+    group_by(hashed_id, period, artist_id) %>% 
+    summarize(l = sum(l_play)) %>% 
     group_by(hashed_id, period) %>% 
-    mutate(f = l_play / sum(l_play)) %>% 
+    mutate(f = l / sum(l)) %>% 
     summarize(div_artist = compute_div(f),
               n_artist   = n())
   return(artist_div)
@@ -69,22 +71,24 @@ compute_endo_pop_diversity <- function(user_artist_per_period, long_tail_limit =
   # for each artist/period...
   # the number of unique consumers 
   uu <- user_artist_per_period %>% 
-    count(artist_id, period)
-  uu <- uu %>% 
+    distinct(hashed_id, artist_id, period) %>% 
+    count(artist_id, period) %>% 
     mutate(n_prev = lag(n)) %>% 
+    filter(!is.na(n_prev)) %>% 
     select(-n)
   # now lag that
   # and compute weighted mean for each user/period
   endopop_div <- user_artist_per_period %>% 
+    group_by(hashed_id, period, artist_id) %>% 
+    summarize(l = sum(l_play)) %>% 
     left_join(uu) %>% 
     group_by(hashed_id, period) %>% 
-    mutate(l = l_play/sum(l_play),
+    mutate(f = l_play/sum(l_play),
            long_tail_limit_threshold = quantile(n_prev, long_tail_limit, na.rm=TRUE)) %>% 
-    summarize(mean_unique_users = sum(l * n_prev),
+    summarize(mean_unique_users = sum(f * n_prev),
               f_endo_longtail = sum(n_prev < long_tail_limit_threshold, na.rm = TRUE) / n(),
-              nb_endo_longtail_pond = sum(l*(n_prev < long_tail_limit_threshold), na.rm=TRUE))
+              nb_endo_longtail_pond = sum(f*(n_prev < long_tail_limit_threshold), na.rm=TRUE))
   return(endopop_div)
-  
 }
 
 compute_gender_diversity <- function(user_artist_per_period, gender){
@@ -98,15 +102,16 @@ compute_gender_diversity <- function(user_artist_per_period, gender){
 
 compute_acoustic_diversity <- function(user_song_per_period, acoustic_features){
   require(tidytable)
-  acoustic_diversity <- user_song_per_period %>% 
+  acoustic_diversity <- up %>% 
     group_by(hashed_id, period, song_id) %>% 
-    tidytable::summarize(l_play = sum(l_play)) %>% 
+    summarize(l = sum(l_play)) %>% 
     ungroup() %>% 
     inner_join(acoustic_features, by = "song_id") %>% 
+    add_count(hashed_id, period) %>% 
+    filter(n > 1, l > 0) %>% 
     group_by(hashed_id, period) %>% 
-    mutate(l = l_play / sum(l_play)) %>% 
-    tidytable::summarize(across(danceability:tempo, list(mean = ~ Hmisc::wtd.mean(.x, l, normwt = FALSE), 
-                                              sd   = ~ sqrt(Hmisc::wtd.var(.x, l, normwt = FALSE))
+    summarize(across(danceability:tempo, list(mean = ~ Hmisc::wtd.mean(.x, l, normwt = TRUE), 
+                                              sd   = ~ sqrt(Hmisc::wtd.var(.x, l, normwt = TRUE))
                                               )
                      )
               )
