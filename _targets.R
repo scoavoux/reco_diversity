@@ -61,7 +61,8 @@ list(
   tar_target(user_acoustic_div,   compute_acoustic_diversity(user_song_per_period, acoustic_features)),
   tar_target(user_artist_div,     compute_artist_diversity(user_artist_per_period)),
   tar_target(user_genre_div,      compute_genre_diversity(user_artist_per_period, genres)),
-  tar_target(user_pop_div,        compute_pop_diversity(user_artist_per_period, artists_pop)),
+  # removed pop div: endogenous (measures fan at the end of the period)
+  #tar_target(user_pop_div,        compute_pop_diversity(user_artist_per_period, artists_pop)),
   tar_target(user_endopop_div,    compute_endo_pop_diversity(user_artist_per_period)),
   tar_target(user_gender_div,     compute_gender_diversity(user_artist_per_period, gender)),
   tar_target(user_regional_div,   compute_regional_diversity(user_artist_per_period, area)),
@@ -69,7 +70,7 @@ list(
   tar_target(user_period_div,     make_user_period_level_data(user_reco,
                                                               user_artist_div,
                                                               user_genre_div,
-                                                              user_pop_div,
+                                                              #user_pop_div,
                                                               user_endopop_div,
                                                               user_regional_div,
                                                               user_acoustic_div,
