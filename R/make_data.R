@@ -1,18 +1,4 @@
-initialize_s3 <- function(){
-  s3 <- paws::s3(config = list(
-    credentials = list(
-      creds = list(
-        access_key_id = Sys.getenv("AWS_ACCESS_KEY_ID"),
-        secret_access_key = Sys.getenv("AWS_SECRET_ACCESS_KEY"),
-        session_token = Sys.getenv("AWS_SESSION_TOKEN")
-      )),
-    endpoint = paste0("https://", Sys.getenv("AWS_S3_ENDPOINT")),
-    region = Sys.getenv("AWS_DEFAULT_REGION")))
-  
-  return(s3)
-}
-
-# list all available files
+#' List files with streaming data on AWS
 list_streaming_data_files <- function(){
   s3 <- initialize_s3()
   stream_data_files <- s3$list_objects_v2(Bucket = "scoavoux", Prefix = "records_w3/streams")$Content %>% map(~.x$Key) %>% 
@@ -21,44 +7,44 @@ list_streaming_data_files <- function(){
   return(stream_data_files)
 }
 
+#' Make user data
+#' Only those in control group for now
+make_user_data <- function(){
+  s3 <- initialize_s3()
+  users <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/RECORDS_hashed_user_group.parquet")$Body %>% 
+    read_parquet()
+  
+  # restrict to users from control group
+  users <- users %>% 
+    filter(is_in_control_group, pay_offer) %>% 
+    select(hashed_id) %>% 
+    truncate_hashed_id()
+  
+  return(users)
+}
+
+#' Pairing between song_id and artist_id
 make_items_data <- function(){
-  require(tidyverse)
   require(tidytable)
   
   s3 <- initialize_s3()
-  
   items_old <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/items/songs.snappy.parquet")$Body %>% 
     read_parquet(col_select = c("song_id", "artist_id"))
   items_new <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/items/song.snappy.parquet")$Body %>% 
     read_parquet(col_select = c("song_id", "artist_id"))  
   items <- bind_rows(items_old, items_new) %>% 
-    distinct()
+    distinct(song_id, .keep_all = TRUE)
   return(items)
 }
 
-
-## Because importing them all at once creates memory problems, we divide
-## the task. This function loads and preprocesses each streaming data file
-## which is then turned to the next function for summary.
-make_user_artist_per_period_table_onefile <- function(file, items, interval = "month"){
-  require(tidyverse)
+#' Because importing them all at once creates memory problems, we divide
+#' the task. This function loads and preprocesses each streaming data file
+#' which is then turned to the next function for summary.
+make_user_song_per_period_onefile <- function(file, users, interval = "month"){
   require(tidytable)
-  require(arrow)
   require(lubridate)
   
-  breakdown_time <- function(time, interval){
-    # year(time)
-    if(interval == "month"){
-      r <- format.Date(time, "%Y-%m")
-    } else if(interval == "week"){
-      r <- format.Date(time, "%Y-%W")
-    }
-    return(r)
-  }
-  
   s3 <- initialize_s3()
-  users <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/RECORDS_hashed_user_group.parquet")$Body %>% 
-     read_parquet()
   if(str_detect(file, "long")){
     streams <- s3$get_object(Bucket = "scoavoux", Key = file)$Body %>% 
       read_parquet(col_select = c("hashed_id", "ts_listen", "song_id",
@@ -71,24 +57,32 @@ make_user_artist_per_period_table_onefile <- function(file, items, interval = "m
       rename(song_id = "media_id") %>% 
       select(-media_type)
   }
-  streams <- streams %>% 
-    filter(hashed_id %in% filter(users, is_in_control_group)$hashed_id,
-           # filter only music played from 2017/01/01
+  streams <- streams %>%
+    truncate_hashed_id() %>% 
+    inner_join(users) %>% 
+    filter(# filter only music played from 2017/01/01
            ts_listen >= 1483228800,
            is_listened == 1) %>% 
     mutate(ts_listen = as.integer(ts_listen)) %>% 
     mutate(period = breakdown_time(ts_listen, interval),
            lt = ifelse(listening_time < 0, 0, listening_time)) %>% 
-    select(-ts_listen, -listening_time)
-  
-  
-  user_artist_per_period <- streams %>% 
-    left_join(items) %>% 
-    filter(!is.na(artist_id)) %>% 
+    select(-ts_listen, -listening_time, -is_listened)
+
+  user_song_per_period <- streams %>% 
     summarise(l_play = sum(lt), 
               n_play = n(),
-              .by = c(hashed_id, period, artist_id, context_4))
-  return(user_artist_per_period)
+              .by = c(hashed_id, period, song_id, context_4))
+  return(user_song_per_period)
+}
+
+merge_user_song_per_period <- function(...){
+  require(tidytable)
+  streams <- bind_rows(...) %>% 
+    summarise(l_play = sum(l_play),
+              n_play = sum(n_play),
+              .by = c(hashed_id, period, song_id, context_4)) %>% 
+    arrange(period)
+  return(streams)
 }
 
 make_artists_to_remove <- function(artists_to_remove_file){
@@ -99,8 +93,7 @@ make_artists_to_remove <- function(artists_to_remove_file){
 
 ## We bind each of the previous datasets together and compute summary stats.
 merge_user_artist_per_period_table <- function(..., artists_to_remove){
-  library(tidyverse)
-  library(tidytable)
+  require(tidytable)
   streams <- bind_rows(...) %>% 
     summarise(l_play = sum(l_play),
               n_play = sum(n_play),
@@ -109,6 +102,22 @@ merge_user_artist_per_period_table <- function(..., artists_to_remove){
     mutate(period = factor(period)) %>% 
     anti_join(artists_to_remove)
   return(streams)
+}
+
+### Now do the same but at the song level to compute audio features based
+### on spotify's audio features
+
+make_items_acoustic_features_data <- function(items){
+  require(tidytable)
+  
+  s3 <- initialize_s3()
+  acoustic <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/250205-deezer-with-audio-ft.feather")$Body %>% 
+    read_feather(col_select = c("song_id", "danceability", "energy", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo"))
+  acoustic <- acoustic %>% 
+    mutate(song_id = bit64::as.integer64(song_id))
+  acoustic <- acoustic %>% 
+    inner_join(select(items, song_id))
+  return(acoustic)
 }
 
 make_genre_data <- function(){
