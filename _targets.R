@@ -66,6 +66,7 @@ list(
   tar_target(user_endopop_div,    compute_endo_pop_diversity(user_artist_per_period)),
   tar_target(user_gender_div,     compute_gender_diversity(user_artist_per_period, gender)),
   tar_target(user_regional_div,   compute_regional_diversity(user_artist_per_period, area)),
+  tar_target(user_omnivore_div,   compute_legitimacy_diversity(user_artist_per_period, artist_legitimacy)),
   ## Put everything together
   tar_target(user_period_div,     make_user_period_level_data(user_reco,
                                                               user_artist_div,
@@ -74,7 +75,8 @@ list(
                                                               user_endopop_div,
                                                               user_regional_div,
                                                               user_acoustic_div,
-                                                              user_gender_div)),
+                                                              user_gender_div,
+                                                              user_omnivore_div)),
   
   ## Descriptive stats ------
   
@@ -89,7 +91,10 @@ list(
              format = "qs"),
 
   ## Output ------
-  tar_target(gg_treatment_effect,  plot_treatment_effect(models_coefs, model_params), 
+  tar_target(gg_treatment_effect_nonacoustic,  plot_treatment_effect(models_coefs, model_params, what = "general"), 
+             format = "file",
+             repository = "local"),
+  tar_target(gg_treatment_effect_acoustic,  plot_treatment_effect(models_coefs, model_params, what = "acoustic"), 
              format = "file",
              repository = "local"),
   tar_target(descriptive_stats,    compute_descriptive_stats(user_artist_per_period),

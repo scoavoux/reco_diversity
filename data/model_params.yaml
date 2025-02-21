@@ -98,126 +98,266 @@
   inverted: FALSE
 - diversity: danceability_sd
   log: no
-  scale: yes
+  scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: danceability_sd
   log: no
-  scale: yes
+  scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: energy_sd
   log: no
-  scale: yes
+  scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: energy_sd
   log: no
-  scale: yes
+  scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: loudness_sd
   log: no
-  scale: yes
+  scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: loudness_sd
   log: no
-  scale: yes
+  scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: speechiness_sd
   log: no
-  scale: yes
+  scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: speechiness_sd
   log: no
-  scale: yes
+  scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: acousticness_sd
   log: no
-  scale: yes
+  scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: acousticness_sd
   log: no
-  scale: yes
+  scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: instrumentalness_sd
   log: no
-  scale: yes
+  scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: instrumentalness_sd
   log: no
-  scale: yes
+  scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: liveness_sd
   log: no
-  scale: yes
+  scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: liveness_sd
   log: no
-  scale: yes
+  scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: valence_sd
   log: no
-  scale: yes
+  scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: valence_sd
   log: no
-  scale: yes
+  scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: tempo_sd
   log: no
-  scale: yes
+  scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
 - diversity: tempo_sd
   log: no
+  scale: no
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_endo_isei_mean
+  log: no
   scale: yes
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_endo_isei_mean
+  log: no
+  scale: yes
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_endo_isei_sd
+  log: no
+  scale: no
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_endo_isei_sd
+  log: no
+  scale: no
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_endo_educ_mean
+  log: no
+  scale: yes
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_endo_educ_mean
+  log: no
+  scale: yes
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_endo_educ_sd
+  log: no
+  scale: no
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_endo_educ_sd
+  log: no
+  scale: no
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_press_mean
+  log: no
+  scale: yes
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_press_mean
+  log: no
+  scale: yes
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_press_sd
+  log: no
+  scale: no
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_press_sd
+  log: no
+  scale: no
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_score_mean
+  log: no
+  scale: yes
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_score_mean
+  log: no
+  scale: yes
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_score_sd
+  log: no
+  scale: no
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_score_sd
+  log: no
+  scale: no
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_radio_mean
+  log: no
+  scale: yes
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_radio_mean
+  log: no
+  scale: yes
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_radio_sd
+  log: no
+  scale: no
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: sc_exo_radio_sd
+  log: no
+  scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes

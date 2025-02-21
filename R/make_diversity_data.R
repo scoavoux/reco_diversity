@@ -118,7 +118,25 @@ compute_acoustic_diversity <- function(user_song_per_period, acoustic_features){
     return(acoustic_diversity)
 }
 
-compute_legitimacy_diversity <- function(user_artist_per_period){}
+compute_legitimacy_diversity <- function(user_artist_per_period, artist_legitimacy){
+  require(tidytable)
+  s3 <- initialize_s3()
+  artists <- s3$get_object(Bucket = "scoavoux", Key = "omnivorism/objects/artists_csv")$Body %>% 
+    read_csv() %>% 
+    select(artist_id, starts_with("sc_"))
+  
+  omnivore_diversity <- user_artist_per_period %>%
+    group_by(hashed_id, period, artist_id) %>% 
+    summarize(l = sum(l_play, na.rm=TRUE)) %>%
+    ungroup() %>% 
+    left_join(artists) %>% 
+    group_by(hashed_id, period) %>% 
+    summarize(across(starts_with("sc_"), 
+                     list(mean = ~Hmisc::wtd.mean(.x, weights = l, na.rm = TRUE),
+                          sd   = ~sqrt(Hmisc::wtd.var(.x, weights = l, na.rm = TRUE))))) %>% 
+    ungroup()
+  return(omnivore_diversity)
+}
 
 make_user_period_level_data <- function(..., 
                                         min_hours_played = 2, 

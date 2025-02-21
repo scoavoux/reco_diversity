@@ -48,10 +48,8 @@ extract_treatment_effect <- function(model){
   return(result)
 }
 
-plot_treatment_effect <- function(models_coefs, model_params){
+plot_treatment_effect <- function(models_coefs, model_params, what = c("general", "acoustic", "all")){
   theme_set(theme_minimal())
-  tar_load(model_params)
-  tar_load(models_coefs)
   # invert coefs
   model_params <- bind_rows(model_params) %>%
     select(dependant = "diversity", inverted) %>% 
@@ -60,14 +58,24 @@ plot_treatment_effect <- function(models_coefs, model_params){
     left_join(model_params) %>% 
     mutate(treatment_effect = ifelse(inverted, -1 * treatment_effect, treatment_effect))
   
+  what <- what[1]
+  if(!(what %in% c("general", "acoustic", "all"))){
+    stop("Argument 'what' should  be 'general', 'acoustic' or 'all'")
+  } else if(what == "acoustic"){
+    models_coefs <- models_coefs %>% 
+      filter(str_detect(dependant, "_sd$"))
+  } else if(what == "general"){
+    models_coefs <- models_coefs %>% 
+      filter(!str_detect(dependant, "_sd$"))
+  }
   models_coefs <- models_coefs %>% 
     mutate(dependant = recode_vars(dependant, "cleandiversity") %>% 
              str_replace_all("\\\\n", "\n"),
            dependant = ifelse(inverted, paste0(dependant, "*"), dependant),
            treatment = recode_vars(treatment, "cleanreco") %>% 
-             factor(levels = c("All", "Algorithmic", "Editorial")))
+             factor(levels = c("All", "Algorithmic", "Editorial"))
+           )
   
-
   gg <- ggplot(models_coefs, aes(y = dependant,
                            x = treatment_effect,
                            xmin = treatment_effect - 2*treatment_effect_se,
@@ -83,7 +91,7 @@ plot_treatment_effect <- function(models_coefs, model_params){
          shape = "Recommendation",
          color = "Recommendation") +
     theme(legend.position = "bottom")
-  filename <- "output/gg_treatment_effect.pdf"
+  filename <- str_glue("output/gg_treatment_effect_{what}.pdf")
   ggsave(filename, gg, width=19, height=12, units = "cm")
   return(filename)
 }
