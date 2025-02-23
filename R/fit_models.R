@@ -48,7 +48,7 @@ extract_treatment_effect <- function(model){
   return(result)
 }
 
-plot_treatment_effect <- function(models_coefs, model_params, what = c("general", "acoustic", "all")){
+plot_treatment_effect <- function(models_coefs, model_params, what = c("general", "legitimacy", "acoustic", "all")){
   theme_set(theme_minimal())
   # invert coefs
   model_params <- bind_rows(model_params) %>%
@@ -58,15 +58,17 @@ plot_treatment_effect <- function(models_coefs, model_params, what = c("general"
     left_join(model_params) %>% 
     mutate(treatment_effect = ifelse(inverted, -1 * treatment_effect, treatment_effect))
   
+  
   what <- what[1]
-  if(!(what %in% c("general", "acoustic", "all"))){
+  if(!(what %in% c("general", "legitimacy", "acoustic", "all"))){
     stop("Argument 'what' should  be 'general', 'acoustic' or 'all'")
-  } else if(what == "acoustic"){
+  } else if(what != "all"){
     models_coefs <- models_coefs %>% 
-      filter(str_detect(dependant, "_sd$"))
-  } else if(what == "general"){
-    models_coefs <- models_coefs %>% 
-      filter(!str_detect(dependant, "_sd$"))
+      mutate(type = case_when(str_detect(dependant, "sc_") ~ "legitimacy",
+                              str_detect(dependant, "_sd$") ~ "acoustic",
+                              TRUE ~ "general")) %>% 
+      filter(type == what)
+      
   }
   models_coefs <- models_coefs %>% 
     mutate(dependant = recode_vars(dependant, "cleandiversity") %>% 

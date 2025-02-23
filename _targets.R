@@ -91,7 +91,10 @@ list(
              format = "qs"),
 
   ## Output ------
-  tar_target(gg_treatment_effect_nonacoustic,  plot_treatment_effect(models_coefs, model_params, what = "general"), 
+  tar_target(gg_treatment_effect_general,  plot_treatment_effect(models_coefs, model_params, what = "general"), 
+             format = "file",
+             repository = "local"),
+  tar_target(gg_treatment_effect_legitimacy,  plot_treatment_effect(models_coefs, model_params, what = "legitimacy"), 
              format = "file",
              repository = "local"),
   tar_target(gg_treatment_effect_acoustic,  plot_treatment_effect(models_coefs, model_params, what = "acoustic"), 

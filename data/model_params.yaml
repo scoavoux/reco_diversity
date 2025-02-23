@@ -124,20 +124,6 @@
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: loudness_sd
-  log: no
-  scale: no
-  treatment: pooled
-  period_fe: yes
-  ind_fe: yes
-  inverted: FALSE
-- diversity: loudness_sd
-  log: no
-  scale: no
-  treatment: separate
-  period_fe: yes
-  ind_fe: yes
-  inverted: FALSE
 - diversity: speechiness_sd
   log: no
   scale: no
