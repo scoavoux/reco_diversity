@@ -140,14 +140,29 @@ compute_legitimacy_diversity <- function(user_artist_per_period, artist_legitima
 
 make_user_period_level_data <- function(..., 
                                         min_hours_played = 2, 
-                                        min_artist_played = 1){
+                                        min_artist_played = 1,
+                                        min_users_per_period = 1000,
+                                        trim_first_week = TRUE){
   l <- list(...)
   users_raw <- l[[1]]
   for(i in 2:length(l)){
     users_raw <- users_raw %>% 
       full_join(l[[i]], by = c("hashed_id", "period"))
   }
-  # we add a constraint: to keep a user
+  
+  # We filter out periods before june 2018 for lack of users
+  # We do it here because compiling the data was long and
+  # I don't want to go through it again but it should be done 
+  # in a previous step (make_songs_users data)
+  users_raw <- users_raw %>%
+    add_count(period) %>% 
+    filter(n >= min_users_per_period) %>% 
+    select(-n)
+  if(trim_first_week){
+    users_raw <- users_raw %>% 
+      filter(!(str_detect(period, "-00")))
+  }
+  # We add a constraint: to keep a user
   users_raw <- users_raw %>% 
     ungroup() %>% 
     filter(total_play_l > min_hours_played,

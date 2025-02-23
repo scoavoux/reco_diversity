@@ -45,6 +45,8 @@ list(
                                                     pattern = streaming_data_files),
   tar_target(user_song_per_period,                  merge_user_song_per_period(user_song_per_period_onefile)),
   tar_target(user_artist_per_period,                make_user_artist_per_period(user_song_per_period, items, artists_to_remove)),
+  tar_target(user_context4_onefile,                 make_user_context4_onefile(streaming_data_files),
+                                                    pattern = streaming_data_files),
   # tar_target(user_genre_summary_data_prop,        make_user_genre_summary_data(user_artist_per_period_merged_artists, genres, proportion=TRUE)),
   # tar_target(user_genre_summary_data_raw ,        make_user_genre_summary_data(user_artist_per_period_merged_artists, genres, proportion=FALSE)),
   

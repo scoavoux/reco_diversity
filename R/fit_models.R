@@ -98,17 +98,3 @@ plot_treatment_effect <- function(models_coefs, model_params, what = c("general"
   return(filename)
 }
 
-compute_descriptive_stats <- function(user_artist_per_period){
-  require(kableExtra)
-  tb <- tibble(unique_users = n_distinct(user_artist_per_period$hashed_id),
-         unique_periods = n_distinct(user_artist_per_period$period),
-         unique_listening_events = sum(user_artist_per_period$n_play, na.rm = TRUE),
-         unique_artists = n_distinct(user_artist_per_period$artist_id),
-         mean_periods_per_user = nrow(distinct(user_artist_per_period, hashed_id, period))/unique_users)
-  filename <- "output/stat_desc.tex"
-  tb %>% 
-    pivot_longer(everything()) %>% 
-    kbl(format = "latex", digits = 2, booktabs = TRUE) %>% 
-    save_kable(file = filename)
-  return(filename)
-}

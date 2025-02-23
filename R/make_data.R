@@ -203,3 +203,37 @@ make_artists_area <- function(unique_artists){
     select(artist_id, area_name)
   return(res)
 }
+
+## We would 
+make_user_context4_onefile <- function(file, interval = "month"){
+  require(tidytable)
+  require(lubridate)
+  s3 <- initialize_s3()
+  if(str_detect(file, "long")){
+    streams <- s3$get_object(Bucket = "scoavoux", Key = file)$Body %>% 
+      read_parquet(col_select = c("hashed_id", "ts_listen", 
+                                  "is_listened", "listening_time", "context_4"))
+  } else if(str_detect(file, "short")) {
+    streams <- s3$get_object(Bucket = "scoavoux", Key = file)$Body %>% 
+      read_parquet(col_select = c("hashed_id", "ts_listen", 
+                                  "is_listened", "listening_time", "media_type", "context_4")) %>% 
+      filter(media_type == "song") %>% 
+      select(-media_type)
+  }
+  streams <- streams %>%
+    truncate_hashed_id() %>% 
+    filter(# filter only music played from 2017/01/01
+      ts_listen >= 1483228800,
+      is_listened == 1) %>% 
+    mutate(ts_listen = as.integer(ts_listen)) %>% 
+    mutate(period = breakdown_time(ts_listen, interval),
+           lt = ifelse(listening_time < 0, 0, listening_time)) %>% 
+    select(-ts_listen, -listening_time, -is_listened)
+  
+  user_context_per_period <- streams %>% 
+    summarise(l_play = sum(lt), 
+              n_play = n(),
+              .by = c(hashed_id, period, context_4))
+  return(user_context_per_period)
+}
+
