@@ -49,7 +49,7 @@ extract_treatment_effect <- function(model){
 }
 
 plot_treatment_effect <- function(models_coefs, model_params, what = c("general", "legitimacy", "acoustic", "all")){
-  theme_set(theme_minimal())
+  theme_set(theme_minimal(base_size = 15))
   # invert coefs
   model_params <- bind_rows(model_params) %>%
     select(dependant = "diversity", inverted) %>% 
@@ -88,10 +88,10 @@ plot_treatment_effect <- function(models_coefs, model_params, what = c("general"
     geom_linerange(position = position_dodge(width = .5)) +
     geom_vline(xintercept = 0) +
     scale_color_brewer(palette = "Dark2") +
-    labs(x = "Effect of recommendation (standard deviation)", 
-         y = "Diversity",
-         shape = "Recommendation",
-         color = "Recommendation") +
+    labs(x = "Effect of recommendation\n(standardized)", 
+         y = "",
+         shape = "",
+         color = "") +
     theme(legend.position = "bottom")
   filename <- str_glue("output/gg_treatment_effect_{what}.pdf")
   ggsave(filename, gg, width=19, height=12, units = "cm")

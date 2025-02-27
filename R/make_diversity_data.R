@@ -155,6 +155,7 @@ make_user_period_level_data <- function(...,
   # I don't want to go through it again but it should be done 
   # in a previous step (make_songs_users data)
   users_raw <- users_raw %>%
+    ungroup() %>% 
     add_count(period) %>% 
     filter(n >= min_users_per_period) %>% 
     select(-n)
