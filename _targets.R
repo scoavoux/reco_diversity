@@ -6,7 +6,8 @@ library(tarchetypes)
 tar_option_set(
   packages = c("paws", "tidyverse", "arrow"),
   format = "feather",
-  repository = "aws",
+  repository = "aws", 
+  repository_meta = "aws",
   resources = tar_resources(
     aws = tar_resources_aws(
       endpoint = Sys.getenv("S3_ENDPOINT"),
