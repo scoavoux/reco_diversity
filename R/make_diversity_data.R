@@ -67,27 +67,52 @@ compute_pop_diversity <- function(user_artist_per_period,
   return(pop_div)
 }
 
-compute_endo_pop_diversity <- function(user_artist_per_period, long_tail_limit = .9){
+compute_endo_pop_diversity <- function(user_artist_per_period, 
+                                       long_tail_limit = .9,
+                                       superstar_limit = .99){
   # for each artist/period...
   # the number of unique consumers 
   uu <- user_artist_per_period %>% 
     distinct(hashed_id, artist_id, period) %>% 
     count(artist_id, period) %>% 
     mutate(n_prev = lag(n)) %>% 
-    filter(!is.na(n_prev)) %>% 
-    select(-n)
+    filter(!is.na(n_prev))
+  
+  th <- uu %>% 
+    group_by(period) %>% 
+    summarize(longtail_th = quantile(n_prev, long_tail_limit),
+              superstar_th = quantile(n_prev, superstar_limit))
+  
+  artist_period_starcat <- uu %>% 
+    left_join(th) %>% 
+    group_by(period) %>% 
+    mutate(starcat = case_when(n <= longtail_th ~ "longtail",
+                               n <= superstar_th ~ "intermediate",
+                               n > superstar_th ~ "superstar") %>% 
+             factor(levels = c("longtail", "intermediate", "superstar"))) %>% 
+    ungroup() %>% 
+    select(artist_id, period, starcat)
+  
   # now lag that
   # and compute weighted mean for each user/period
-  endopop_div <- user_artist_per_period %>% 
+  x <- user_artist_per_period %>% 
     group_by(hashed_id, period, artist_id) %>% 
     summarize(l = sum(l_play)) %>% 
-    left_join(uu) %>% 
-    group_by(hashed_id, period) %>% 
-    mutate(f = l/sum(l),
-           long_tail_limit_threshold = quantile(n_prev, long_tail_limit, na.rm=TRUE)) %>% 
-    summarize(mean_unique_users = sum(f * n_prev, na.rm=TRUE),
-              f_endo_longtail = sum(n_prev < long_tail_limit_threshold, na.rm = TRUE) / n(),
-              nb_endo_longtail_pond = sum(f*(n_prev < long_tail_limit_threshold), na.rm=TRUE))
+    filter(l > 0) %>% 
+    mutate(f = l/sum(l)) %>% 
+    left_join(artist_period_starcat) %>% 
+    filter(!is.na(starcat)) %>% 
+    group_by(hashed_id, period, starcat) %>% 
+    summarize(f_endo = sum(f),
+              n = n()) %>% 
+    ungroup()
+  endopop_div_f <- x %>% 
+    select(-n) %>% 
+    pivot_wider(names_from = starcat, names_prefix = "f_endo_", values_from = f_endo, values_fill = 0)
+  endopop_div_n <- x %>% 
+    select(-f_endo) %>% 
+    pivot_wider(names_from = starcat, names_prefix = "n_endo_", values_from = n, values_fill = 0)
+  endopop_div <- full_join(endopop_div_f, endopop_div_n)
   return(endopop_div)
 }
 
