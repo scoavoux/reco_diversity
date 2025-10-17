@@ -40,6 +40,20 @@
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
+- diversity: div_linguistic
+  log: yes
+  scale: yes
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: div_linguistic
+  log: yes
+  scale: yes
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
 - diversity: f_woman
   log: no
   scale: yes

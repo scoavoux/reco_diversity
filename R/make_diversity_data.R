@@ -39,6 +39,18 @@ compute_regional_diversity <- function(user_artist_per_period, area){
   return(regional_div)
 }
 
+compute_linguistic_diversity <- function(user_artist_per_period, language){
+  linguistic_div <- user_artist_per_period %>% 
+    left_join(language) %>% 
+    group_by(hashed_id, period, lang) %>% 
+    summarize(l = sum(l_play)) %>% 
+    group_by(hashed_id, period) %>% 
+    mutate(f = l / sum(l)) %>% 
+    summarize(div_linguistic = compute_div(f))
+  return(linguistic_div)
+}
+
+
 ## TODO: implement cultural holes
 
 compute_genre_diversity <- function(user_artist_per_period, genres){

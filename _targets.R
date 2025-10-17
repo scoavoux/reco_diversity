@@ -58,6 +58,7 @@ list(
   tar_target(artists_pop,         make_artists_pop()),
   tar_target(gender,              make_artists_gender(unique_artists)),
   tar_target(area,                make_artists_area(unique_artists)),
+  tar_target(language,            make_artists_language(unique_artists)),
   
   ## Prepare user data ------
   tar_target(user_reco,           compute_use_of_recommendations(user_artist_per_period)),
@@ -69,6 +70,7 @@ list(
   tar_target(user_endopop_div,    compute_endo_pop_diversity(user_artist_per_period)),
   tar_target(user_gender_div,     compute_gender_diversity(user_artist_per_period, gender)),
   tar_target(user_regional_div,   compute_regional_diversity(user_artist_per_period, area)),
+  tar_target(user_linguistic_div, compute_linguistic_diversity(user_artist_per_period, language)),
   tar_target(user_omnivore_div,   compute_legitimacy_diversity(user_artist_per_period, artist_legitimacy)),
   ## Put everything together
   tar_target(user_period_div,     make_user_period_level_data(user_reco,
@@ -77,6 +79,7 @@ list(
                                                               #user_pop_div,
                                                               user_endopop_div,
                                                               user_regional_div,
+                                                              user_linguistic_div,
                                                               user_acoustic_div,
                                                               user_gender_div,
                                                               user_omnivore_div)),

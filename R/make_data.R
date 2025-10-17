@@ -205,6 +205,16 @@ make_artists_area <- function(unique_artists){
   return(res)
 }
 
+make_artists_language <- function(unique_artists){
+  s3 <- initialize_s3()
+  language <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/artists_songs_languages.csv")$Body %>% 
+    read_csv() %>% 
+    rename(artist_id = 'art_id') %>% 
+    select(-nb_songs) %>% 
+    right_join(unique_artists)
+  return(language)
+}
+
 ## We would 
 make_user_context4_onefile <- function(file, interval = "month"){
   require(tidytable)

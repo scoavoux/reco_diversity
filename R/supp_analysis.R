@@ -13,12 +13,14 @@ compute_descriptive_stats <- function(user_artist_per_period){
   return(filename)
 }
 
+plot_dependant_variables_density <- function(user_artist_per_period)
+
 context_by_social_status <- function(user_context4_onefile){
   s3 <- initialize_s3()
   users <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/RECORDS_hashed_user_group.parquet")$Body %>% 
     read_parquet()
   
-  # restrict to users from control group
+  # restrict to users from respondent group
   users <- users %>% 
     filter(is_respondent , pay_offer) %>% 
     select(hashed_id) %>% 
