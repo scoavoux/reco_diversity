@@ -86,13 +86,18 @@ list(
   ## Run main analysis ------
   tar_target(model_params,      make_model_params(model_params_file),
              format = "qs"),
-  tar_target(models_fit,        fit_model(user_period_div, model_params),
+  # tar_target(models_fit,        fit_model(user_period_div, model_params),
+  #                               pattern = model_params,
+  #            format = "qs"),
+  # tar_target(models_coefs,      extract_treatment_effect(models_fit),
+  #                               pattern = models_fit,
+  #            format = "qs"),
+  
+  # don't save intermediary results, too big
+  tar_target(models_coefs,      fit_model_extract_treatment_effect(user_period_div, model_params),
                                 pattern = model_params,
              format = "qs"),
-  tar_target(models_coefs,      extract_treatment_effect(models_fit),
-                                pattern = models_fit,
-             format = "qs"),
-
+  
   ## Output ------
   tar_target(gg_treatment_effect_general,  plot_treatment_effect(models_coefs, model_params, what = "general"), 
              format = "file",

@@ -101,6 +101,7 @@ make_user_artist_per_period <- function(user_song_per_period, items, artists_to_
     group_by(hashed_id, period, artist_id, context_4) %>% 
     summarise(l_play = sum(l_play),
               n_play = sum(n_play)) %>% 
+    ungroup() %>% 
     arrange(period) %>% 
     mutate(period = factor(period))
   return(streams)
