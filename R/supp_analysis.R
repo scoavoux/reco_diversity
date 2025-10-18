@@ -13,7 +13,21 @@ compute_descriptive_stats <- function(user_artist_per_period){
   return(filename)
 }
 
-plot_dependant_variables_density <- function(user_artist_per_period)
+plot_dependant_variables_density <- function(user_period_div){
+  mp <- yaml::read_yaml("data/model_params.yaml") %>% 
+    bind_rows() %>% 
+    distinct(diversity, log, scale)
+  x <- select(user_period_div, all_of(mp$diversity)) %>% 
+    pivot_longer(everything()) %>% 
+    mutate(name = recode_vars(name, "cleandiversity"))
+  
+  theme_set(theme_minimal(base_size = 15))
+  
+  gg <- ggplot(x, aes(value)) +
+    geom_density() +
+    facet_wrap(~name, scale = "free")
+  save(gg, "output/dependant_density.pdf")
+}
 
 context_by_social_status <- function(user_context4_onefile){
   s3 <- initialize_s3()
