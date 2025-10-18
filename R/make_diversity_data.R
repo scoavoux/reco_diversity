@@ -132,12 +132,33 @@ compute_endo_pop_diversity <- function(user_artist_per_period,
   return(endopop_div)
 }
 
-compute_gender_diversity <- function(user_artist_per_period, gender){
+compute_gender_diversity <- function(user_artist_per_period, 
+                                     gender,
+                                     min_nonmissing_n = 5,
+                                     min_nonmissing_freq = .3){
+  # We restrict the dataset to only sessions with enough nonmissing
+  # artist gender.
+  # Default minimum is 5 artists with a gender, making at least 30%
+  # of total listening time
   gender_div <- user_artist_per_period %>% 
-    inner_join(gender) %>% 
+    filter(l_play > 0) %>% 
+    left_join(gender) %>% 
+    filter(is.na(gender) | gender == 1 | gender == 2) %>% 
+    group_by(hashed_id, period, gender) %>% 
+    summarize(n = n(),
+              l = sum(l_play)) %>% 
     group_by(hashed_id, period) %>% 
-    mutate(f = l_play / sum(l_play)) %>% 
-    summarize(f_woman = sum(f * gender == 2))
+    mutate(f = l / sum(l)) %>% 
+    filter(!is.na(gender)) %>% 
+    mutate(keep = ifelse(sum(n) >= min_nonmissing_n & sum(f) >= min_nonmissing_freq,
+                         TRUE,
+                         FALSE)) %>% 
+    ungroup() %>% 
+    filter(keep) %>% 
+    select(hashed_id, period, gender, f) %>% 
+    mutate(gender = factor(gender, c(1,2), c("f_men", "f_women"))) %>% 
+    pivot_wider(names_from = gender, values_from = f, values_fill = 0) %>% 
+    select(hashed_id, period, f_women)
   return(gender_div)
 }
 
