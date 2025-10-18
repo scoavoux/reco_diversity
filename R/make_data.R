@@ -61,8 +61,9 @@ make_user_song_per_period_onefile <- function(file, users, interval = "month"){
   streams <- streams %>%
     truncate_hashed_id() %>% 
     inner_join(users) %>% 
-    filter(# filter only music played from 2017/01/01
-           ts_listen >= 1483228800,
+    filter(# filter only music played from 2019/01/01
+      # there are almost no data before that date
+           ts_listen >= 1546300800,
            is_listened == 1) %>% 
     mutate(ts_listen = as.integer(ts_listen)) %>% 
     mutate(period = breakdown_time(ts_listen, interval),
