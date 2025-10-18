@@ -65,45 +65,48 @@ compute_genre_diversity <- function(user_artist_per_period, genres){
   return(genre_div)
 }
 
-compute_pop_diversity <- function(user_artist_per_period, 
-                                  artists_pop,
-                                  long_tail_quantile=.9){
-  long_tail_limit <- quantile(artists_pop$nb_fans, long_tail_quantile)
-  pop_div <- user_artist_per_period %>% 
-    inner_join(artists_pop) %>% 
-    group_by(hashed_id, period) %>% 
-    mutate(f = l_play / sum(l_play)) %>% 
-    summarize(mean_pop = sum(f*nb_fans),
-              f_longtail = sum(nb_fans < long_tail_limit) / n(),
-              nb_longtail_pond = sum(f*(nb_fans < long_tail_limit)))
-  return(pop_div)
-}
+
+# retired function
+# compute_pop_diversity <- function(user_artist_per_period, 
+#                                   artists_pop,
+#                                   long_tail_quantile=.9){
+#   long_tail_limit <- quantile(artists_pop$nb_fans, long_tail_quantile)
+#   pop_div <- user_artist_per_period %>% 
+#     inner_join(artists_pop) %>% 
+#     group_by(hashed_id, period) %>% 
+#     mutate(f = l_play / sum(l_play)) %>% 
+#     summarize(mean_pop = sum(f*nb_fans),
+#               f_longtail = sum(nb_fans < long_tail_limit) / n(),
+#               nb_longtail_pond = sum(f*(nb_fans < long_tail_limit)))
+#   return(pop_div)
+# }
 
 compute_endo_pop_diversity <- function(user_artist_per_period, 
                                        long_tail_limit = .9,
                                        superstar_limit = .99){
   # for each artist/period...
-  # the number of unique consumers 
+  # the number of unique organic consumers per year
   uu <- user_artist_per_period %>% 
-    distinct(hashed_id, artist_id, period) %>% 
-    count(artist_id, period) %>% 
-    mutate(n_prev = lag(n)) %>% 
-    filter(!is.na(n_prev))
+    filter(context_4 == "organic") %>% 
+    mutate(year = str_extract(period, "^\\d{4}") %>% as.numeric()) %>% 
+    filter(!is.na(year)) %>% 
+    distinct(hashed_id, artist_id, year) %>% 
+    count(artist_id, year)
   
   th <- uu %>% 
-    group_by(period) %>% 
-    summarize(longtail_th = quantile(n_prev, long_tail_limit),
-              superstar_th = quantile(n_prev, superstar_limit))
+    group_by(year) %>% 
+    summarize(longtail_th = quantile(n, long_tail_limit),
+              superstar_th = quantile(n, superstar_limit))
   
   artist_period_starcat <- uu %>% 
     left_join(th) %>% 
-    group_by(period) %>% 
+    group_by(year) %>% 
     mutate(starcat = case_when(n <= longtail_th ~ "longtail",
                                n <= superstar_th ~ "intermediate",
                                n > superstar_th ~ "superstar") %>% 
              factor(levels = c("longtail", "intermediate", "superstar"))) %>% 
     ungroup() %>% 
-    select(artist_id, period, starcat)
+    select(artist_id, year, starcat)
   
   # now lag that
   # and compute weighted mean for each user/period
