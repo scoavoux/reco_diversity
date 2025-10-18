@@ -114,9 +114,10 @@ compute_endo_pop_diversity <- function(user_artist_per_period,
     group_by(hashed_id, period, artist_id) %>% 
     summarize(l = sum(l_play)) %>% 
     filter(l > 0) %>% 
-    mutate(f = l/sum(l)) %>% 
     left_join(artist_period_starcat) %>% 
+    group_by(hashed_id, period) %>% 
     filter(!is.na(starcat)) %>% 
+    mutate(f = l/sum(l)) %>% 
     group_by(hashed_id, period, starcat) %>% 
     summarize(f_endo = sum(f),
               n = n()) %>% 
