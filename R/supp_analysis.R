@@ -26,7 +26,9 @@ plot_dependant_variables_density <- function(user_period_div){
   gg <- ggplot(x, aes(value)) +
     geom_density() +
     facet_wrap(~name, scale = "free")
-  save(gg, "output/dependant_density.pdf")
+  filename <- "output/dependant_density.pdf"
+  ggsave(filename, gg)
+  return(filename)
 }
 
 context_by_social_status <- function(user_context4_onefile){

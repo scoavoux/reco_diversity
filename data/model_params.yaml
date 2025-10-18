@@ -54,14 +54,14 @@
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: f_woman
+- diversity: f_women
   log: no
   scale: yes
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: f_woman
+- diversity: f_women
   log: no
   scale: yes
   treatment: separate
@@ -334,20 +334,6 @@
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: n_endo_longtail
-  log: no
-  scale: yes
-  treatment: pooled
-  period_fe: yes
-  ind_fe: yes
-  inverted: FALSE
-- diversity: n_endo_longtail
-  log: no
-  scale: yes
-  treatment: separate
-  period_fe: yes
-  ind_fe: yes
-  inverted: FALSE
 - diversity: f_endo_intermediate
   log: no
   scale: yes
@@ -362,20 +348,6 @@
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: n_endo_intermediate
-  log: no
-  scale: yes
-  treatment: pooled
-  period_fe: yes
-  ind_fe: yes
-  inverted: FALSE
-- diversity: n_endo_intermediate
-  log: no
-  scale: yes
-  treatment: separate
-  period_fe: yes
-  ind_fe: yes
-  inverted: FALSE
 - diversity: f_endo_superstar
   log: no
   scale: yes
@@ -384,20 +356,6 @@
   ind_fe: yes
   inverted: TRUE
 - diversity: f_endo_superstar
-  log: no
-  scale: yes
-  treatment: separate
-  period_fe: yes
-  ind_fe: yes
-  inverted: TRUE
-- diversity: n_endo_superstar
-  log: no
-  scale: yes
-  treatment: pooled
-  period_fe: yes
-  ind_fe: yes
-  inverted: TRUE
-- diversity: n_endo_superstar
   log: no
   scale: yes
   treatment: separate

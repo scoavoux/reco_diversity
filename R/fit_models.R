@@ -91,7 +91,9 @@ fit_model_extract_treatment_effect <- function(user_period_div,
   
 }
 
-plot_treatment_effect <- function(models_coefs, model_params, what = c("general", "legitimacy", "acoustic", "all")){
+plot_treatment_effect <- function(models_coefs, 
+                                  model_params, 
+                                  what = c("popularity", "general", "omnivore", "legitimacy", "acoustic", "all")){
   theme_set(theme_minimal(base_size = 15))
   # invert coefs
   model_params <- bind_rows(model_params) %>%
@@ -103,22 +105,29 @@ plot_treatment_effect <- function(models_coefs, model_params, what = c("general"
   
   
   what <- what[1]
-  if(!(what %in% c("general", "legitimacy", "acoustic", "all"))){
-    stop("Argument 'what' should  be 'general', 'acoustic' or 'all'")
+  models_coefs <- models_coefs %>% 
+    mutate(type = case_when(str_detect(dependant, "sc_.*_sd") | dependant == "div_genre" ~ "omnivore",
+                            str_detect(dependant, "sc_") ~ "legitimacy",
+                            str_detect(dependant, "_sd$") ~ "acoustic",
+                            str_detect(dependant, "f_endo_") ~ "popularity",
+                            TRUE ~ "general"))
+  if(!(what %in% c("popularity", "general", "omnivore", "legitimacy", "acoustic", "all"))){
+    stop("Argument 'what' should  be 'popularity', 'general', 'acoustic', 'legitimacy', 'omnivore', or 'all'")
   } else if(what != "all"){
     models_coefs <- models_coefs %>% 
-      mutate(type = case_when(str_detect(dependant, "sc_") ~ "legitimacy",
-                              str_detect(dependant, "_sd$") ~ "acoustic",
-                              TRUE ~ "general")) %>% 
       filter(type == what)
-      
   }
   models_coefs <- models_coefs %>% 
     mutate(dependant = recode_vars(dependant, "cleandiversity") %>% 
              str_replace_all("\\\\n", "\n"),
            dependant = ifelse(inverted, paste0(dependant, "*"), dependant),
            treatment = recode_vars(treatment, "cleanreco") %>% 
-             factor(levels = c("All", "Algorithmic", "Editorial"))
+             factor(levels = c("All", "Algorithmic", "Editorial")),
+           type = factor(type, 
+                         levels = c("popularity", "general", "legitimacy", "omnivore", "acoustic"),
+                         labels = c("Popularity", "Artist demographics", 
+                                    "Cultural hierarchies", "Variance in cultural hierarchies",
+                                    "Aesthetic features"))
            )
   
   gg <- ggplot(models_coefs, aes(y = dependant,
@@ -136,6 +145,10 @@ plot_treatment_effect <- function(models_coefs, model_params, what = c("general"
          shape = "",
          color = "") +
     theme(legend.position = "bottom")
+  if(what == "all"){
+    gg <- gg + 
+      facet_wrap(~ type, ncol = 2, scales='free')
+  }
   filename <- str_glue("output/gg_treatment_effect_{what}.pdf")
   ggsave(filename, gg, width=19, height=12, units = "cm")
   return(filename)

@@ -101,8 +101,11 @@ list(
                                 pattern = model_params,
              format = "qs"),
   
-  ## Output ------
+  ## Main output ------
   tar_target(gg_treatment_effect_general,  plot_treatment_effect(models_coefs, model_params, what = "general"), 
+             format = "file",
+             repository = "local"),
+  tar_target(gg_treatment_effect_omnivore,  plot_treatment_effect(models_coefs, model_params, what = "omnivore"), 
              format = "file",
              repository = "local"),
   tar_target(gg_treatment_effect_legitimacy,  plot_treatment_effect(models_coefs, model_params, what = "legitimacy"), 
@@ -111,7 +114,18 @@ list(
   tar_target(gg_treatment_effect_acoustic,  plot_treatment_effect(models_coefs, model_params, what = "acoustic"), 
              format = "file",
              repository = "local"),
-  tar_target(descriptive_stats,    compute_descriptive_stats(user_artist_per_period),
+  tar_target(gg_treatment_effect_popularity,  plot_treatment_effect(models_coefs, model_params, what = "popularity"), 
+             format = "file",
+             repository = "local"),
+  tar_target(gg_treatment_effect_all,  plot_treatment_effect(models_coefs, model_params, what = "all"), 
+             format = "file",
+             repository = "local"),
+  
+  ## Supplementary analyses ------
+  tar_target(descriptive_stats,                 compute_descriptive_stats(user_artist_per_period),
+             format = "file",
+             repository = "local"),
+  tar_target(gg_dependant_density,              plot_dependant_variables_density(user_period_div),
              format = "file",
              repository = "local")
   )
