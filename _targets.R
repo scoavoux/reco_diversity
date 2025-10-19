@@ -125,7 +125,10 @@ list(
   tar_target(descriptive_stats,                 compute_descriptive_stats(user_artist_per_period),
              format = "file",
              repository = "local"),
-  tar_target(gg_dependant_density,              plot_dependant_variables_density(user_period_div),
+  tar_target(gg_dependant_density_raw,          plot_dependant_variables_density(user_period_div, .transformation = "raw"),
+             format = "file",
+             repository = "local"),
+  tar_target(gg_dependant_density_transformed,  plot_dependant_variables_density(user_period_div, .transformation = "transformed"),
              format = "file",
              repository = "local")
   )

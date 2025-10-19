@@ -13,21 +13,35 @@ compute_descriptive_stats <- function(user_artist_per_period){
   return(filename)
 }
 
-plot_dependant_variables_density <- function(user_period_div){
+plot_dependant_variables_density <- function(user_period_div, .transformation = "raw"){
   mp <- yaml::read_yaml("data/model_params.yaml") %>% 
     bind_rows() %>% 
     distinct(diversity, log, scale)
+  if(.transformation != "raw"){
+    for(i in 1:nrow(mp)){
+      div_var <- sym(mp$diversity[i])
+      
+      if(mp$log[i]){
+        user_period_div <- user_period_div %>%
+          mutate({{ div_var }} := log({{ div_var }} + 1))
+      }
+      if(mp$scale[i]){
+        user_period_div <- user_period_div %>%
+          mutate({{ div_var }} := scale({{ div_var }}))
+      }
+    }
+  }
   x <- select(user_period_div, all_of(mp$diversity)) %>% 
     pivot_longer(everything()) %>% 
     mutate(name = recode_vars(name, "cleandiversity"))
   
-  theme_set(theme_minimal(base_size = 15))
+  theme_set(theme_minimal())
   
   gg <- ggplot(x, aes(value)) +
     geom_density() +
     facet_wrap(~name, scale = "free")
-  filename <- "output/dependant_density.pdf"
-  ggsave(filename, gg)
+  filename <- str_glue("output/dependant_density_{.transformation}.pdf")
+  ggsave(filename, gg, width = 12, height = 10)
   return(filename)
 }
 
