@@ -9,6 +9,8 @@ cleandiversity,"f_endo_intermediate","Share of time spent on intermediate artist
 cleandiversity,"n_endo_intermediate","Number of intermediate artists (90-99%)"
 cleandiversity,"f_endo_superstar","Share of time spent on superstar artists  (top 1%)"
 cleandiversity,"n_endo_superstar","Number of superstar artists (top 1%)"
+cleandiversity,"f_endo_not_organic","Share of time spent on artists not in organic play"
+cleandiversity,"n_endo_not_organic","Number of artists not in organic play"
 cleandiversity,"div_linguistic","Language diversity"
 cleandiversity,"div_regional","Country diversity"
 cleandiversity,"div_genre","Genre diversity"

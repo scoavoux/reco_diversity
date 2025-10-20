@@ -1,5 +1,6 @@
 compute_descriptive_stats <- function(user_artist_per_period){
   require(kableExtra)
+  options(scipen = 99)
   tb <- tibble(unique_users = n_distinct(user_artist_per_period$hashed_id),
                unique_periods = n_distinct(user_artist_per_period$period),
                unique_listening_events = sum(user_artist_per_period$n_play, na.rm = TRUE),

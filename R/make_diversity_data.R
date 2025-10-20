@@ -90,8 +90,8 @@ compute_endo_pop_diversity <- function(user_artist_per_period,
     filter(context_4 == "organic") %>% 
     mutate(year = str_extract(period, "^\\d{4}") %>% as.numeric()) %>% 
     filter(!is.na(year)) %>% 
-    distinct(hashed_id, artist_id, year) %>% 
-    count(artist_id, year)
+    group_by(artist_id, year) %>% 
+    summarize(n = sum(l_play)/(60*60))
   
   th <- uu %>% 
     group_by(year) %>% 
@@ -115,8 +115,8 @@ compute_endo_pop_diversity <- function(user_artist_per_period,
     summarize(l = sum(l_play)) %>% 
     filter(l > 0) %>% 
     left_join(artist_period_starcat) %>% 
+    mutate(starcat = fct_na_value_to_level(starcat, level = "not_organic")) %>% 
     group_by(hashed_id, period) %>% 
-    filter(!is.na(starcat)) %>% 
     mutate(f = l/sum(l)) %>% 
     group_by(hashed_id, period, starcat) %>% 
     summarize(f_endo = sum(f),

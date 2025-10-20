@@ -362,3 +362,17 @@
   period_fe: yes
   ind_fe: yes
   inverted: TRUE
+- diversity: f_endo_not_organic
+  log: no
+  scale: yes
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: TRUE
+- diversity: f_endo_not_organic
+  log: no
+  scale: yes
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: TRUE
