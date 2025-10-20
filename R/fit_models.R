@@ -95,14 +95,24 @@ plot_treatment_effect <- function(models_coefs,
                                   model_params, 
                                   what = c("popularity", "general", "omnivore", "legitimacy", "acoustic", "all")){
   theme_set(theme_minimal(base_size = 15))
-  # invert coefs
-  model_params <- bind_rows(model_params) %>%
-    select(dependant = "diversity", inverted) %>% 
-    distinct()
-  models_coefs <- models_coefs %>%
-    left_join(model_params) %>% 
-    mutate(treatment_effect = ifelse(inverted, -1 * treatment_effect, treatment_effect))
   
+  
+  model_params <- bind_rows(model_params) %>%
+    select(dependant = "diversity", inverted, log) %>% 
+    distinct()
+  
+  # Do we want to invert coefficients? Usually, positive means more diversity
+  # but not for some metrics (share of superstar: positive coef means lower 
+  # diversity). We might want to invert the coefficient in that case, so that
+  # all dots on the plot can easily be read on a negative to positive side
+  # However, it might lead to counterintuitive results: for instance all coefs
+  # for popularity are on the same side but it means some are positive and some
+  # negative (+ superstar => - long tail). Therefore, we remove this for now.
+  # models_coefs <- models_coefs %>%
+  #   left_join(model_params) %>% 
+  #   mutate(treatment_effect = ifelse(inverted, -1 * treatment_effect, treatment_effect))
+  models_coefs <- models_coefs %>%
+    left_join(model_params)
   
   what <- what[1]
   models_coefs <- models_coefs %>% 
@@ -120,7 +130,9 @@ plot_treatment_effect <- function(models_coefs,
   models_coefs <- models_coefs %>% 
     mutate(dependant = recode_vars(dependant, "cleandiversity") %>% 
              str_replace_all("\\\\n", "\n"),
+           # add sign if inverted; if logged
            dependant = ifelse(inverted, paste0(dependant, "*"), dependant),
+           dependant = ifelse(log, paste0(dependant, "§"), dependant),
            treatment = recode_vars(treatment, "cleanreco") %>% 
              factor(levels = c("All", "Algorithmic", "Editorial")),
            type = factor(type, 
