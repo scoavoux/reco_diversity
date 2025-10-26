@@ -87,7 +87,6 @@ compute_endo_pop_diversity <- function(user_artist_per_period,
   # for each artist/period...
   # the number of unique organic consumers per year
   uu <- user_artist_per_period %>% 
-    filter(context_4 == "organic") %>% 
     mutate(year = str_extract(period, "^\\d{4}") %>% as.numeric()) %>% 
     filter(!is.na(year)) %>% 
     group_by(artist_id, year) %>% 
@@ -115,7 +114,6 @@ compute_endo_pop_diversity <- function(user_artist_per_period,
     summarize(l = sum(l_play)) %>% 
     filter(l > 0) %>% 
     left_join(artist_period_starcat) %>% 
-    mutate(starcat = fct_na_value_to_level(starcat, level = "not_organic")) %>% 
     group_by(hashed_id, period) %>% 
     mutate(f = l/sum(l)) %>% 
     group_by(hashed_id, period, starcat) %>% 
