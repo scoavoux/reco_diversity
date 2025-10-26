@@ -216,6 +216,31 @@ make_artists_language <- function(unique_artists){
   return(language)
 }
 
+make_artists_release <- function(unique_artists){
+  s3 <- initialize_s3()
+  
+  # Musicbrainz id to deezer id
+  mbid <- s3$get_object(Bucket = "scoavoux", Key = "musicbrainz/mbid_deezerid.csv")$Body %>% 
+    read_csv() %>% 
+    right_join(select(unique_artists, artist_id))
+    
+  
+  # Data about dates of release of albums
+  release_group <- s3$get_object(Bucket = "scoavoux", Key = "musicbrainz/mbid_release_group.csv")$Body %>% 
+    read_csv()
+  
+  date_begin <- release_group %>% 
+    right_join(mbid) %>% 
+    filter(!is.na(first_release_date_year)) %>% 
+    group_by(artist_id) %>% 
+    arrange(first_release_date_year) %>% 
+    slice(1) %>% 
+    select(artist_id, date_begin = first_release_date_year) %>% 
+    ungroup() %>% 
+    mutate(date_begin = ifelse(date_begin < 1960, 1960, date_begin))
+  return(date_begin)
+}
+
 ## We would 
 make_user_context4_onefile <- function(file, interval = "month"){
   require(tidytable)

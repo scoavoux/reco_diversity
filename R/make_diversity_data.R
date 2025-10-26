@@ -233,3 +233,12 @@ make_user_period_level_data <- function(...,
   
   return(users_raw)
 }
+
+compute_release_recency <- function(user_artist_per_period, release){
+  average_artist_age <- user_artist_per_period %>% 
+    inner_join(release) %>% 
+    group_by(hashed_id, period) %>% 
+    mutate(f = l_play / sum(l_play)) %>% 
+    summarize(average_artist_age = sum(date_begin * f))
+  return(average_artist_age)
+}

@@ -119,7 +119,7 @@ plot_treatment_effect <- function(models_coefs,
     mutate(type = case_when(str_detect(dependant, "sc_.*_sd") | dependant == "div_genre" ~ "omnivore",
                             str_detect(dependant, "sc_") ~ "legitimacy",
                             str_detect(dependant, "_sd$") ~ "acoustic",
-                            str_detect(dependant, "f_endo_") ~ "popularity",
+                            str_detect(dependant, "f_endo_|average_artist_age") ~ "popularity",
                             TRUE ~ "general"))
   if(!(what %in% c("popularity", "general", "omnivore", "legitimacy", "acoustic", "all"))){
     stop("Argument 'what' should  be 'popularity', 'general', 'acoustic', 'legitimacy', 'omnivore', or 'all'")
