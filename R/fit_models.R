@@ -136,10 +136,10 @@ plot_treatment_effect <- function(models_coefs,
            treatment = recode_vars(treatment, "cleanreco") %>% 
              factor(levels = c("All", "Algorithmic", "Editorial")),
            type = factor(type, 
-                         levels = c("popularity", "general", "legitimacy", "omnivore", "acoustic"),
-                         labels = c("Popularity", "Artist demographics", 
-                                    "Cultural hierarchies", "Variance in cultural hierarchies",
-                                    "Aesthetic features"))
+                         levels = c("general", "popularity", "acoustic", "legitimacy", "omnivore"),
+                         labels = c("Artist demographics", "Popularity",
+                                    "Aesthetic features", 
+                                    "Cultural hierarchies", "Variance in cultural hierarchies"))
            )
   
   gg <- ggplot(models_coefs, aes(y = dependant,

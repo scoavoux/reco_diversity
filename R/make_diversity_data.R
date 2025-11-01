@@ -40,13 +40,22 @@ compute_regional_diversity <- function(user_artist_per_period, area){
 }
 
 compute_linguistic_diversity <- function(user_artist_per_period, language){
-  linguistic_div <- user_artist_per_period %>% 
+  lang_freq <- user_artist_per_period %>% 
     left_join(language) %>% 
     group_by(hashed_id, period, lang) %>% 
     summarize(l = sum(l_play)) %>% 
     group_by(hashed_id, period) %>% 
-    mutate(f = l / sum(l)) %>% 
-    summarize(div_linguistic = compute_div(f))
+    mutate(f = l / sum(l))
+
+  fr_en <- lang_freq %>% 
+    filter(lang %in% c("fr", "en")) %>% 
+    select(hashed_id, period, lang, f) %>% 
+    mutate(lang = paste0("lang_share_", lang)) %>% 
+    pivot_wider(names_from = lang, values_from = f, values_fill = 0) 
+  linguistic_div <- lang_freq %>% 
+    summarize(div_linguistic = compute_div(f)) %>% 
+    left_join(fr_en) %>% 
+    mutate(across(starts_with("lang_share_"), ~ifelse(is.na(.x), 0, .x)))
   return(linguistic_div)
 }
 

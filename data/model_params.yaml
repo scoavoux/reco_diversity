@@ -376,3 +376,31 @@
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
+- diversity: lang_share_fr
+  log: no
+  scale: yes
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: lang_share_fr
+  log: no
+  scale: yes
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: lang_share_en
+  log: no
+  scale: yes
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: lang_share_en
+  log: no
+  scale: yes
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
