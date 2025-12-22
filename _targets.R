@@ -60,6 +60,7 @@ list(
   tar_target(area,                make_artists_area(unique_artists)),
   tar_target(language,            make_artists_language(unique_artists)),
   tar_target(release,             make_artists_release(unique_artists)),
+  tar_target(artist_cluster,      make_artists_cluster()),
   
   ## Prepare user data ------
   tar_target(user_reco,           compute_use_of_recommendations(user_artist_per_period)),
@@ -74,6 +75,8 @@ list(
   tar_target(user_linguistic_div, compute_linguistic_diversity(user_artist_per_period, language)),
   tar_target(user_omnivore_div,   compute_legitimacy_diversity(user_artist_per_period, artist_legitimacy)),
   tar_target(user_release_recency,compute_release_recency(user_artist_per_period, release)),
+  tar_target(user_related_art_div, compute_related_artists_diversity(user_artist_per_period, artist_cluster)),
+  
   ## Put everything together
   tar_target(user_period_div,     make_user_period_level_data(user_reco,
                                                               user_artist_div,
@@ -85,7 +88,8 @@ list(
                                                               user_acoustic_div,
                                                               user_gender_div,
                                                               user_omnivore_div,
-                                                              user_release_recency)),
+                                                              user_release_recency,
+                                                              user_related_art_div)),
   
   ## Descriptive stats ------
   

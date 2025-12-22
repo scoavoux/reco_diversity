@@ -274,3 +274,24 @@ make_user_context4_onefile <- function(file, interval = "month"){
   return(user_context_per_period)
 }
 
+make_artists_cluster <- function(){
+  require(igraph)
+  s3 <- initialize_s3()
+  related <- s3$get_object(Bucket = "scoavoux", Key = "records_w3/related_artists/related_artists.csv")$Body %>% 
+    read_csv()
+  related_graph <- graph_from_data_frame(select(related, orig_artist_id, dest_artist_id), directed=TRUE)
+  cl <- cluster_infomap(related_graph)
+  
+  clusters <- tibble(
+    vertex_id  = V(related_graph)$name,
+    cluster_id = membership(cl))
+  results <- clusters %>% 
+    rename(orig_artist_id = vertex_id) %>% 
+    mutate(orig_artist_id = as.numeric(orig_artist_id)) %>% 
+    right_join(distinct(related, orig_artist_id)) %>% 
+    add_count(cluster_id) %>% 
+    mutate(cluster_id = ifelse(n < 10, NA, cluster_id)) %>% 
+    select(artist_id = "orig_artist_id", related_artists_infomap_cluster = "cluster_id")
+  return(results)
+}
+

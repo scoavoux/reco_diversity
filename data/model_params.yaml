@@ -404,3 +404,17 @@
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
+- diversity: related_artists_diversity
+  log: yes
+  scale: yes
+  treatment: pooled
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE
+- diversity: related_artists_diversity
+  log: yes
+  scale: yes
+  treatment: separate
+  period_fe: yes
+  ind_fe: yes
+  inverted: FALSE

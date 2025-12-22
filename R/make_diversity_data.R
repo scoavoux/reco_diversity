@@ -24,7 +24,8 @@ compute_artist_diversity <- function(user_artist_per_period){
     group_by(hashed_id, period) %>% 
     mutate(f = l / sum(l)) %>% 
     summarize(div_artist = compute_div(f),
-              n_artist   = n())
+              n_artist   = n()) %>% 
+    ungroup()
   return(artist_div)
 }
 
@@ -35,7 +36,8 @@ compute_regional_diversity <- function(user_artist_per_period, area){
     summarize(l = sum(l_play)) %>% 
     group_by(hashed_id, period) %>% 
     mutate(f = l / sum(l)) %>% 
-    summarize(div_regional = compute_div(f))
+    summarize(div_regional = compute_div(f)) %>% 
+    ungroup()
   return(regional_div)
 }
 
@@ -45,7 +47,8 @@ compute_linguistic_diversity <- function(user_artist_per_period, language){
     group_by(hashed_id, period, lang) %>% 
     summarize(l = sum(l_play)) %>% 
     group_by(hashed_id, period) %>% 
-    mutate(f = l / sum(l))
+    mutate(f = l / sum(l)) %>% 
+    ungroup()
 
   fr_en <- lang_freq %>% 
     filter(lang %in% c("fr", "en")) %>% 
@@ -53,7 +56,9 @@ compute_linguistic_diversity <- function(user_artist_per_period, language){
     mutate(lang = paste0("lang_share_", lang)) %>% 
     pivot_wider(names_from = lang, values_from = f, values_fill = 0) 
   linguistic_div <- lang_freq %>% 
+    group_by(hashed_id, period) %>% 
     summarize(div_linguistic = compute_div(f)) %>% 
+    ungroup() %>% 
     left_join(fr_en) %>% 
     mutate(across(starts_with("lang_share_"), ~ifelse(is.na(.x), 0, .x)))
   return(linguistic_div)
@@ -70,7 +75,8 @@ compute_genre_diversity <- function(user_artist_per_period, genres){
     group_by(hashed_id, period) %>% 
     mutate(f = l / sum(l)) %>% 
     summarize(div_genre = compute_div(f),
-              n_genre   = n())
+              n_genre   = n()) %>% 
+    ungroup()
   return(genre_div)
 }
 
@@ -183,7 +189,8 @@ compute_acoustic_diversity <- function(user_song_per_period, acoustic_features){
                                               sd   = ~ sqrt(Hmisc::wtd.var(.x, l, normwt = TRUE))
                                               )
                      )
-              )
+              ) %>% 
+    ungroup()
     return(acoustic_diversity)
 }
 
@@ -246,6 +253,20 @@ compute_release_recency <- function(user_artist_per_period, release){
     inner_join(release) %>% 
     group_by(hashed_id, period) %>% 
     mutate(f = l_play / sum(l_play)) %>% 
-    summarize(average_artist_age = sum(date_begin * f))
+    summarize(average_artist_age = sum(date_begin * f)) %>% 
+    ungroup()
   return(average_artist_age)
+}
+
+compute_related_artists_diversity <- function(user_artist_per_period, clusters){
+  related_artists_diversity <- user_artist_per_period %>% 
+    left_join(clusters) %>% 
+    filter(!is.na(related_artists_infomap_cluster)) %>% 
+    group_by(hashed_id, period, related_artists_infomap_cluster) %>% 
+    summarize(l = sum(l_play)) %>%
+    group_by(hashed_id, period) %>% 
+    mutate(f = l / sum(l)) %>% 
+    summarize(related_artists_diversity = compute_div(f)) %>% 
+    ungroup()
+  return(related_artists_diversity)
 }
