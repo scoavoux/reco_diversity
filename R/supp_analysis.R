@@ -89,3 +89,32 @@ context_by_social_status <- function(user_context4_onefile){
       facet_wrap(~context_4)
   
 }
+
+
+plot_recommendation_use <- function(user_period_div){
+  upd <- user_period_div %>% select(hashed_id, period, total_play_l, starts_with("c4"))
+  abs_change <- upd %>% 
+    group_by(hashed_id) %>% 
+    mutate(c4_reco_absolute_change = abs(c4_reco - lag(c4_reco))) %>% 
+    filter(!is.na(c4_reco_absolute_change))
+  # this plots the share of periods that have seen a change in recommendation 
+  # use by various thresholds (5, 10, 25, 50 pp).
+  theme_set(theme_minimal(base_size = 15))
+  
+  gg <- abs_change %>% 
+    group_by(hashed_id) %>% 
+    summarize(n = n(),
+              `More than 05 pp change` = sum(c4_reco_absolute_change > .05) / n,
+              `More than 10 pp change` = sum(c4_reco_absolute_change > .1) / n,
+              `More than 25 pp change` = sum(c4_reco_absolute_change > .25) / n,
+              `More than 50 pp change` = sum(c4_reco_absolute_change > .5) / n) %>% 
+    pivot_longer(starts_with("More")) %>% 
+    ggplot(aes(value)) +
+      geom_density() +
+      facet_wrap(~name, scale = "free_y") +
+      labs(x = "Period-to-period change in use of recommendation",
+           y = "")
+ filename <- "output/gg_change_recommendation_use.pdf"   
+ ggsave(filename, gg)
+ return(filename)
+}
