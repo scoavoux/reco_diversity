@@ -29,3 +29,7 @@ div_linguistic,demographics
 f_women,demographics
 lang_share_fr,demographics
 lang_share_en,demographics
+pc1,acoustic
+pc2,acoustic
+pc3,acoustic
+pc4,acoustic

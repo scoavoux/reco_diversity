@@ -120,8 +120,25 @@ make_items_acoustic_features_data <- function(items){
   acoustic <- acoustic %>% 
     mutate(song_id = bit64::as.integer64(song_id))
   acoustic <- acoustic %>% 
-    inner_join(select(items, song_id))
+    inner_join(select(items, song_id)) %>% 
+    distinct()
   return(acoustic)
+}
+
+make_acoustic_features_pca <- function(acoustic_features){
+  pc <- irlba::prcomp_irlba(select(acoustic_features, -song_id), scale. = TRUE, n = 5, center = TRUE)
+  row.names(pc$rotation) <- names(acoustic_features)[2:10]
+  return(pc)
+}
+
+make_acoustic_features_pca_data <- function(acoustic_features_pca, acoustic_features){
+  ac <- acoustic_features %>% 
+    select(song_id) %>% 
+    mutate(pc1 = acoustic_features_pca$x[,"PC1"],
+           pc2 = acoustic_features_pca$x[,"PC2"],
+           pc3 = acoustic_features_pca$x[,"PC3"],
+           pc4 = acoustic_features_pca$x[,"PC4"])
+  return(ac)
 }
 
 make_genre_data <- function(){

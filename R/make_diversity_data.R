@@ -185,7 +185,7 @@ compute_acoustic_diversity <- function(user_song_per_period, acoustic_features){
     add_count(hashed_id, period) %>% 
     filter(n > 1, l > 0) %>% 
     group_by(hashed_id, period) %>% 
-    summarize(across(danceability:tempo, list(mean = ~ Hmisc::wtd.mean(.x, l, normwt = TRUE), 
+    summarize(across(danceability:pc4, list(mean = ~ Hmisc::wtd.mean(.x, l, normwt = TRUE), 
                                               sd   = ~ sqrt(Hmisc::wtd.var(.x, l, normwt = TRUE))
                                               )
                      )
