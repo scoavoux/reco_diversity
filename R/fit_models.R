@@ -115,15 +115,10 @@ plot_treatment_effect <- function(models_coefs,
     left_join(model_params)
   
   what <- what[1]
+  dependant_groups <- read_csv("data/dependant_groups.csv")
   models_coefs <- models_coefs %>% 
-    mutate(type = case_when(str_detect(dependant, "sc_.*_sd") | dependant == "div_genre" ~ "omnivore",
-                            str_detect(dependant, "sc_") ~ "legitimacy",
-                            str_detect(dependant, "_sd$") ~ "acoustic",
-                            str_detect(dependant, "f_endo_|average_artist_age") ~ "popularity",
-                            TRUE ~ "general"))
-  if(!(what %in% c("popularity", "general", "omnivore", "legitimacy", "acoustic", "all"))){
-    stop("Argument 'what' should  be 'popularity', 'general', 'acoustic', 'legitimacy', 'omnivore', or 'all'")
-  } else if(what != "all"){
+    left_join(dependant_groups)
+  if(what != "all"){
     models_coefs <- models_coefs %>% 
       filter(type == what)
   }
@@ -136,7 +131,7 @@ plot_treatment_effect <- function(models_coefs,
            treatment = recode_vars(treatment, "cleanreco") %>% 
              factor(levels = c("All", "Algorithmic", "Editorial")),
            type = factor(type, 
-                         levels = c("general", "popularity", "acoustic", "legitimacy", "omnivore"),
+                         levels = c("demographics", "popularity", "acoustic", "legitimacy", "omnivore"),
                          labels = c("Artist demographics", "Popularity",
                                     "Aesthetic features", 
                                     "Cultural hierarchies", "Variance in cultural hierarchies"))
@@ -160,9 +155,9 @@ plot_treatment_effect <- function(models_coefs,
   if(what == "all"){
     gg <- gg + 
       facet_wrap(~ type, ncol = 2, scales='free_y')
-    ggsave(filename, gg, width=19, height=12, units = "cm")
+    ggsave(filename, gg, width=40, height=25, units = "cm")
   } else {
-    ggsave(filename, gg, width=30, height=40, units = "cm")
+    ggsave(filename, gg, width=19, height=12, units = "cm")
   }
   
   return(filename)

@@ -109,7 +109,7 @@ list(
              format = "qs"),
   
   ## Main output ------
-  tar_target(gg_treatment_effect_general,  plot_treatment_effect(models_coefs, model_params, what = "general"), 
+  tar_target(gg_treatment_effect_general,  plot_treatment_effect(models_coefs, model_params, what = "demographics"), 
              format = "file",
              repository = "local"),
   tar_target(gg_treatment_effect_omnivore,  plot_treatment_effect(models_coefs, model_params, what = "omnivore"), 
