@@ -141,7 +141,7 @@ plot_treatment_effect <- function(models_coefs,
                                     "Aesthetic features", 
                                     "Cultural hierarchies", "Variance in cultural hierarchies"))
            )
-  
+  filename <- str_glue("output/gg_treatment_effect_{what}.pdf")
   gg <- ggplot(models_coefs, aes(y = dependant,
                            x = treatment_effect,
                            xmin = treatment_effect - 2*treatment_effect_se,
@@ -159,10 +159,12 @@ plot_treatment_effect <- function(models_coefs,
     theme(legend.position = "bottom")
   if(what == "all"){
     gg <- gg + 
-      facet_wrap(~ type, ncol = 2, scales='free')
+      facet_wrap(~ type, ncol = 2, scales='free_y')
+    ggsave(filename, gg, width=19, height=12, units = "cm")
+  } else {
+    ggsave(filename, gg, width=30, height=40, units = "cm")
   }
-  filename <- str_glue("output/gg_treatment_effect_{what}.pdf")
-  ggsave(filename, gg, width=19, height=12, units = "cm")
+  
   return(filename)
 }
 
