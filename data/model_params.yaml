@@ -418,56 +418,56 @@
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: pc1
+- diversity: pc1_sd
   log: no
   scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: pc1
+- diversity: pc1_sd
   log: no
   scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: pc2
+- diversity: pc2_sd
   log: no
   scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: pc2
+- diversity: pc2_sd
   log: no
   scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: pc3
+- diversity: pc3_sd
   log: no
   scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: pc3
+- diversity: pc3_sd
   log: no
   scale: no
   treatment: separate
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: pc4
+- diversity: pc4_sd
   log: no
   scale: no
   treatment: pooled
   period_fe: yes
   ind_fe: yes
   inverted: FALSE
-- diversity: pc4
+- diversity: pc4_sd
   log: no
   scale: no
   treatment: separate

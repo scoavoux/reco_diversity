@@ -7,7 +7,7 @@ fit_model <- function(user_period_div,
                       model_params){
   require(fixest)
   div_var <- sym(model_params[[1]]$diversity[[1]])
-
+  
   if( model_params[[1]]$log){
     user_period_div <- user_period_div %>%
       mutate({{ div_var }} := log({{ div_var }} + 1))
