@@ -11,6 +11,8 @@ related_artists_diversity,acoustic
 f_endo_longtail,popularity
 f_endo_intermediate,popularity
 f_endo_superstar,popularity
+f_endo_star,popularity
+f_endo_small_star,popularity
 average_artist_age,popularity
 div_genre,omnivore
 sc_endo_isei_sd,omnivore

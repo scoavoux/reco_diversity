@@ -98,7 +98,9 @@ compute_genre_diversity <- function(user_artist_per_period, genres){
 
 compute_endo_pop_diversity <- function(user_artist_per_period, 
                                        long_tail_limit = .9,
-                                       superstar_limit = .99){
+                                       intermediary_limit = .95,
+                                       star_limit = .99,
+                                       superstar_limit = .999){
   # for each artist/period...
   # the number of unique organic consumers per year
   uu <- user_artist_per_period %>% 
@@ -110,15 +112,19 @@ compute_endo_pop_diversity <- function(user_artist_per_period,
   th <- uu %>% 
     group_by(year) %>% 
     summarize(longtail_th = quantile(n, long_tail_limit),
+              intermediary_th = quantile(n, intermediary_limit),
+              star_th = quantile(n, star_limit),
               superstar_th = quantile(n, superstar_limit))
   
   artist_period_starcat <- uu %>% 
     left_join(th) %>% 
     group_by(year) %>% 
     mutate(starcat = case_when(n <= longtail_th ~ "longtail",
-                               n <= superstar_th ~ "intermediate",
+                               n <= intermediary_th ~ "intermediate",
+                               n <= star_th ~ "small_star",
+                               n <= superstar_th ~ "star",
                                n > superstar_th ~ "superstar") %>% 
-             factor(levels = c("longtail", "intermediate", "superstar"))) %>% 
+             factor(levels = c("longtail", "intermediate", "small_star", "star", "superstar"))) %>% 
     ungroup() %>% 
     select(artist_id, year, starcat)
   

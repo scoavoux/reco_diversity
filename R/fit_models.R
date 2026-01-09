@@ -96,7 +96,6 @@ plot_treatment_effect <- function(models_coefs,
                                   what = c("popularity", "general", "omnivore", "legitimacy", "acoustic", "all")){
   theme_set(theme_minimal(base_size = 15))
   
-  
   model_params <- bind_rows(model_params) %>%
     select(dependant = "diversity", inverted, log) %>% 
     distinct()
@@ -128,6 +127,7 @@ plot_treatment_effect <- function(models_coefs,
            # add sign if inverted; if logged
            dependant = ifelse(inverted, paste0(dependant, "*"), dependant),
            dependant = ifelse(log, paste0(dependant, "§"), dependant),
+           dependant = factor(dependant, levels = unique(dependant)),
            treatment = recode_vars(treatment, "cleanreco") %>% 
              factor(levels = c("All", "Algorithmic", "Editorial")),
            type = factor(type, 
@@ -136,6 +136,7 @@ plot_treatment_effect <- function(models_coefs,
                                     "Aesthetic features", 
                                     "Cultural hierarchies", "Variance in cultural hierarchies"))
            )
+  models_coefs %>% filter(str_detect(dependant, "Share of"))
   filename <- str_glue("output/gg_treatment_effect_{what}.pdf")
   gg <- ggplot(models_coefs, aes(y = dependant,
                            x = treatment_effect,
