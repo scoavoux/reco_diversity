@@ -148,5 +148,8 @@ list(
              repository = "local"),
   tar_target(gg_recommendation_use_by_year,     plot_recommendation_use_by_year(user_period_div),
              format = "file",
+             repository = "local"),
+  tar_target(gg_algorithms_use_by_genre_year,   plot_algorithms_use_by_genre_year(user_artist_per_period, genres),
+             format = "file",
              repository = "local")
   )

@@ -159,3 +159,30 @@ plot_recommendation_use_by_year <- function(user_period_div){
   return(filename)
   
 }
+
+plot_algorithms_use_by_genre_year <- function(user_artist_per_period, genres){
+  d <- user_artist_per_period %>% 
+    mutate(year = str_extract(period, "\\d{4}")) %>% 
+    group_by(year, artist_id, context_4) %>% 
+    summarize(l = sum(l_play)) %>% 
+    left_join(genres) %>% 
+    group_by(year, context_4, genre) %>% 
+    summarize(l = sum(l)) %>% 
+    ungroup()
+  theme_set(theme_minimal(base_size = 15))
+  gg <- d %>% 
+    group_by(year, genre) %>% 
+    mutate(f = l / sum(l)) %>% 
+    ungroup() %>% 
+    filter(context_4 == "reco_algo", !is.na(genre)) %>% 
+    mutate(genre = recode_vars(genre, "cleangenres") %>% fct_reorder(f, mean)) %>% 
+    ggplot(aes(f, genre)) +
+      geom_col() +
+      facet_wrap(~year) +
+      labs(x = "Prevalence of algorithmic recommendations", y = "")
+  gg
+  filename <- "output/gg_algorithms_use_by_genre_year.png"
+  ggsave(filename, gg, width = 12)
+  return(filename)
+  
+}
