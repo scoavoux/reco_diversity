@@ -91,7 +91,7 @@ context_by_social_status <- function(user_context4_onefile){
 }
 
 
-plot_recommendation_use <- function(user_period_div){
+plot_recommendation_use_change <- function(user_period_div){
   upd <- user_period_div %>% select(hashed_id, period, total_play_l, starts_with("c4"))
   abs_change <- upd %>% 
     group_by(hashed_id) %>% 
@@ -114,7 +114,48 @@ plot_recommendation_use <- function(user_period_div){
       facet_wrap(~name, scale = "free_y") +
       labs(x = "Period-to-period change in use of recommendation",
            y = "")
- filename <- "output/gg_change_recommendation_use.pdf"   
+ filename <- "output/gg_recommendation_use_change.pdf"   
  ggsave(filename, gg)
  return(filename)
+}
+
+plot_context_ternary <- function(user_period_div){
+  require(ggtern)
+  upd <- select(user_period_div, period, hashed_id, c4_edito, c4_reco_algo, c4_organic)
+
+  u <- upd %>% 
+    group_by(hashed_id) %>% 
+    summarize(across(starts_with("c4"), ~mean(.x))) 
+  gg <- u %>% 
+    ggtern(aes(x = c4_edito, y = c4_organic, z = c4_reco_algo)) +
+      geom_point(shape = ".") +
+      labs(x = "Editorial", y = "Organic", z = "Algorithm")
+  filename <- "output/gg_ternary_context_use.png"
+  ggsave(filename, gg)
+  return(filename)
+}
+
+plot_recommendation_use_by_year <- function(user_period_div){
+  theme_set(theme_minimal(base_size = 15))
+  yty <- user_period_div %>% 
+    select(-c4_reco) %>% 
+    mutate(year = str_extract(period, "\\d{4}") %>% as.numeric()) %>% 
+    group_by(year, hashed_id) %>% 
+    summarize(across(starts_with("c4_"), mean)) %>% 
+    summarize(across(starts_with("c4_"), mean))
+  
+  
+  gg <- yty %>% 
+    pivot_longer(-year) %>% 
+    mutate(name = factor(name, levels = c("c4_organic", "c4_edito", "c4_reco_algo"),
+                         labels = c("Organic", "Editorial", "Algorithmic"))) %>% 
+    ggplot(aes(year, value, color = name)) +
+      geom_point() +
+      geom_line() +
+      labs(x = "", y = "", color = "Context") +
+      scale_y_continuous(breaks = seq(0, .8, .2), limits = c(0, .75))
+  filename <- "output/gg_recommendation_use_by_year.png"
+  ggsave(filename, gg, width = 10)
+  return(filename)
+  
 }

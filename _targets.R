@@ -140,7 +140,13 @@ list(
   tar_target(gg_dependant_density_transformed,  plot_dependant_variables_density(user_period_div, .transformation = "transformed"),
              format = "file",
              repository = "local"),
-  tar_target(gg_change_recommendation_use,      plot_recommendation_use(user_period_div),
+  tar_target(gg_change_recommendation_use,      plot_recommendation_use_change(user_period_div),
+             format = "file",
+             repository = "local"),
+  tar_target(gg_context_ternary,                plot_context_ternary(user_period_div),
+             format = "file",
+             repository = "local"),
+  tar_target(gg_recommendation_use_by_year,     plot_recommendation_use_by_year(user_period_div),
              format = "file",
              repository = "local")
   )
