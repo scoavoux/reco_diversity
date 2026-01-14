@@ -126,6 +126,7 @@ plot_context_ternary <- function(user_period_div){
   u <- upd %>% 
     group_by(hashed_id) %>% 
     summarize(across(starts_with("c4"), ~mean(.x))) 
+  theme_set(theme_minimal())
   gg <- u %>% 
     ggtern(aes(x = c4_edito, y = c4_organic, z = c4_reco_algo)) +
       geom_point(shape = ".") +
