@@ -19,12 +19,10 @@ models_coefs <- models_coefs %>%
 
 models_coefs <- models_coefs %>% 
   filter(dependant %in% c("div_artist", "div_genre", "div_regional", 
-                          "div_linguistic", "f_women", "sc_exo_score_mean", 
-                          "sc_exo_score_sd", "f_endo_longtail", 
+                          "div_linguistic", "f_women", "f_endo_longtail", 
                           "f_endo_intermediate", "f_endo_small_star", 
                           "f_endo_star", "f_endo_superstar", 
-                          "related_artists_diversity", "pc1_sd", "pc2_sd", 
-                          "pc3_sd"))
+                          "related_artists_diversity"))
 
 models_coefs <- models_coefs %>% 
   mutate(type = ifelse(dependant %in% c("div_genre", "sc_exo_score_sd", "sc_exo_score_mean"), "acoustic", type),
@@ -65,5 +63,5 @@ gg <- ggplot(models_coefs, aes(y = dependant,
   theme(legend.position = "bottom")
 gg <- gg + 
   facet_wrap(~ type, ncol = 1, scales='free_y') +
-  ggh4x::force_panelsizes(rows = c(4, 5, 7))
+  ggh4x::force_panelsizes(rows = c(4, 2, 5))
 gg
