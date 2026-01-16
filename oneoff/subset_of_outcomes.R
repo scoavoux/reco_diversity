@@ -36,15 +36,15 @@ models_coefs <- models_coefs %>%
          treatment = recode_vars(treatment, "cleanreco") %>% 
            factor(levels = c("All", "Algorithmic", "Editorial")),
          type = factor(type, 
-                       levels = c("demographics", "popularity", "acoustic"),
-                       labels = c("Artist demographics", "Popularity",
-                                  "Aesthetic features"))
+                       levels = c("demographics", "acoustic", "popularity"),
+                       labels = c("Artist demographics", "Aesthetic features", "Popularity"))
   )
 dep_lab <- read_csv("oneoff/dependants.csv")
 models_coefs <- models_coefs %>% 
   left_join(dep_lab) %>% 
   select(-dependant) %>% 
-  rename(dependant = "dependant_new")
+  rename(dependant = "dependant_new") %>% 
+  mutate(dependant = factor(dependant, levels = unique(dependant)))
 
 gg <- ggplot(models_coefs, aes(y = dependant,
                                x = treatment_effect,
