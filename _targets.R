@@ -149,7 +149,14 @@ list(
   tar_target(gg_recommendation_use_by_year,     plot_recommendation_use_by_year(user_period_div),
              format = "file",
              repository = "local"),
-  tar_target(gg_algorithms_use_by_genre_year,   plot_algorithms_use_by_genre_year(user_artist_per_period, genres),
+  tar_target(gg_algorithms_use_by_genre_year,   plot_algorithms_use_by_genre_year(user_artist_per_period, genres, .by_year = TRUE),
+             format = "file",
+             repository = "local"),
+  tar_target(gg_algorithms_use_by_genre_global, plot_algorithms_use_by_genre_year(user_artist_per_period, genres, .by_year = FALSE),
+             format = "file",
+             repository = "local"),
+  tar_target(gg_recommendation_use_rythms,      plot_recommendation_use_rythms(),
              format = "file",
              repository = "local")
+
   )
