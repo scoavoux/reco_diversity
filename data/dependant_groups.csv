@@ -14,7 +14,7 @@ f_endo_superstar,popularity
 f_endo_star,popularity
 f_endo_small_star,popularity
 average_artist_age,popularity
-div_genre,omnivore
+div_genre,acoustic
 sc_endo_isei_sd,omnivore
 sc_endo_educ_sd,omnivore
 sc_exo_press_sd,omnivore

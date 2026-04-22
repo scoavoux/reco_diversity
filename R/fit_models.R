@@ -125,7 +125,7 @@ plot_treatment_effect <- function(models_coefs,
     mutate(dependant = recode_vars(dependant, "cleandiversity") %>% 
              str_replace_all("\\\\n", "\n"),
            # add sign if inverted; if logged
-           dependant = ifelse(inverted, paste0(dependant, "*"), dependant),
+#           dependant = ifelse(inverted, paste0(dependant, "*"), dependant),
            dependant = ifelse(log, paste0(dependant, "§"), dependant),
            dependant = factor(dependant, levels = unique(dependant)),
            treatment = recode_vars(treatment, "cleanreco") %>% 
