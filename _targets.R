@@ -78,7 +78,7 @@ list(
   tar_target(user_omnivore_div,   compute_legitimacy_diversity(user_artist_per_period, artist_legitimacy)),
   tar_target(user_release_recency,compute_release_recency(user_artist_per_period, release)),
   tar_target(user_related_art_div, compute_related_artists_diversity(user_artist_per_period, artist_cluster)),
-  
+  tar_target(user_instrument,        make_recoshare_instrument(user_reco)),
   ## Put everything together
   tar_target(user_period_div,     make_user_period_level_data(user_reco,
                                                               user_artist_div,
@@ -91,7 +91,8 @@ list(
                                                               user_gender_div,
                                                               user_omnivore_div,
                                                               user_release_recency,
-                                                              user_related_art_div)),
+                                                              user_related_art_div,
+                                                              user_instrument)),
   
   ## Descriptive stats ------
   
@@ -108,6 +109,10 @@ list(
   # don't save intermediary results, too big
   tar_target(models_coefs,      fit_model_extract_treatment_effect(user_period_div, model_params),
                                 pattern = model_params,
+             format = "qs"),
+
+  tar_target(iv_models_coefs, fit_bartik_model_extract_treatment_effect(user_period_div, model_params),
+             pattern = model_params,
              format = "qs"),
   
   ## Main output ------
@@ -129,7 +134,28 @@ list(
   tar_target(gg_treatment_effect_all,  plot_treatment_effect(models_coefs, model_params, what = "all"), 
              format = "file",
              repository = "local"),
+
+  ## Bartik IV model ------
+  tar_target(gg_treatment_effect_general_bartik,  plot_treatment_effect(iv_models_coefs, model_params, what = "demographics", postfix="_bartik"), 
+             format = "file",
+             repository = "local"),
+  tar_target(gg_treatment_effect_omnivore_bartik,  plot_treatment_effect(iv_models_coefs, model_params, what = "omnivore", postfix="_bartik"), 
+             format = "file",
+             repository = "local"),
+  tar_target(gg_treatment_effect_legitimacy_bartik,  plot_treatment_effect(iv_models_coefs, model_params, what = "legitimacy", postfix="_bartik"), 
+             format = "file",
+             repository = "local"),
+  tar_target(gg_treatment_effect_acoustic_bartik,  plot_treatment_effect(iv_models_coefs, model_params, what = "acoustic", postfix="_bartik"), 
+             format = "file",
+             repository = "local"),
+  tar_target(gg_treatment_effect_popularity_bartik,  plot_treatment_effect(iv_models_coefs, model_params, what = "popularity", postfix="_bartik"), 
+             format = "file",
+             repository = "local"),
+  tar_target(gg_treatment_effect_all_bartik,  plot_treatment_effect(iv_models_coefs, model_params, what = "all", postfix="_bartik"), 
+             format = "file",
+             repository = "local"),
   
+    
   ## Supplementary analyses ------
   tar_target(descriptive_stats,                 compute_descriptive_stats(user_artist_per_period),
              format = "file",

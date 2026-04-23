@@ -229,7 +229,7 @@ make_user_period_level_data <- function(...,
   users_raw <- l[[1]]
   for(i in 2:length(l)){
     users_raw <- users_raw %>% 
-      full_join(l[[i]], by = c("hashed_id", "period"))
+      full_join(l[[i]])
   }
   
   # We filter out periods before june 2018 for lack of users
@@ -250,7 +250,7 @@ make_user_period_level_data <- function(...,
     ungroup() %>% 
     filter(total_play_l > min_hours_played,
            n_artist > min_artist_played)
-  
+
   return(users_raw)
 }
 

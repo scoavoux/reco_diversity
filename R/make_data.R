@@ -312,3 +312,66 @@ make_artists_cluster <- function(){
   return(results)
 }
 
+# Compute baseline for Bartik IV ------
+make_recoshare_instrument <- function(user_reco,
+                                    week_threshold = 20,
+                                    volume_threshold = 100){
+  # First, compute the baseline for each user
+  # Baseline is share of reco the first year (2019)
+  # We restrict the dataset to users
+  # - who streamed on 20 weeks
+  # - in 2019
+  # - for a total of 100 hours at least
+  
+  user_reco_2019 <- user_reco %>% 
+    mutate(year = str_extract(period, "^\\d{4}") %>% as.integer()) %>% 
+    filter(year == 2019, total_play_l > 0) %>% 
+    select(-c4_organic)
+  
+  users_to_include <- user_reco_2019 %>% 
+    group_by(hashed_id) %>% 
+    summarize(n = n(), 
+              l = sum(total_play_l)) %>% 
+    filter(n > week_threshold,
+           l > volume_threshold) %>% 
+    select(hashed_id)
+  
+  baseline <- users_to_include %>% 
+    left_join(user_reco_2019) %>% 
+    group_by(hashed_id) %>% 
+    summarize(across(c4_edito:c4_reco, 
+                     ~sum(.x*total_play_l, na.rm=TRUE)/sum(total_play_l, na.rm=TRUE),
+                     .names = "baseline_{.col}")) %>% 
+    ungroup()
+  
+  # Next, compute the shift, considered as deviation from average
+  user_reco <- user_reco %>% 
+    select(-c4_organic) %>% 
+    group_by(period) %>% 
+    mutate(den_t = sum(total_play_l),
+           across(starts_with("c4_"), 
+                  ~ (sum(total_play_l * .x, na.rm=TRUE) - (total_play_l * .x)) / (den_t - total_play_l),
+                  .names = "shift_{.col}")) %>% 
+    ungroup() %>% 
+    select(-den_t)
+  
+  # Finally, we compute the instrument. It is only valid (not NA) if
+  # - user has a baseline (see restriction above)
+  # - year is post 2019 (because that's when the baseline is computed)
+  
+  res <- user_reco %>% 
+    inner_join(baseline, by = "hashed_id") %>% 
+    mutate(year = str_extract(period, "^\\d{4}") %>% as.integer()) %>% 
+    filter(year > 2019, total_play_l > 0) %>% 
+    mutate(                                                                            
+      Z_c4_reco      = baseline_c4_reco      * shift_c4_reco,
+      Z_c4_edito     = baseline_c4_edito     * shift_c4_edito,                         
+      Z_c4_reco_algo = baseline_c4_reco_algo * shift_c4_reco_algo
+    )                                                                                  
+  res <- select(res, hashed_id, period, 
+                starts_with("Z_"),
+                starts_with("baseline_"),
+                starts_with("shift_"))
+  return(res)
+}
+

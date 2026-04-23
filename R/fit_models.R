@@ -3,52 +3,6 @@ make_model_params <- function(model_params_file){
   return(model_params)
 }
 
-fit_model <- function(user_period_div, 
-                      model_params){
-  require(fixest)
-  div_var <- sym(model_params[[1]]$diversity[[1]])
-  
-  if( model_params[[1]]$log){
-    user_period_div <- user_period_div %>%
-      mutate({{ div_var }} := log({{ div_var }} + 1))
-  }
-  if( model_params[[1]]$scale){
-    user_period_div <- user_period_div %>%
-      mutate({{ div_var }} := scale({{ div_var }}))
-  }
-  if( model_params[[1]]$treatment[[1]] == "pooled") {
-    char_treatment <- "c4_reco"
-  } else if( model_params[[1]]$treatment[[1]] == "separate") {
-    char_treatment <- "c4_reco_algo + c4_edito"
-  }
-  char_fe <- case_when(
-     model_params[[1]]$period_fe[[1]] &  model_params[[1]]$ind_fe[[1]] ~ "| hashed_id + period",
-     model_params[[1]]$period_fe[[1]] ~ "| period",
-     model_params[[1]]$ind_fe[[1]] ~ "| hashed_id",
-    TRUE ~ ""
-  )
-  char_div <-  model_params[[1]]$diversity[[1]]
-  to_fit <- str_glue("{char_div} ~ {char_treatment} + log(total_play_l) {char_fe}") %>% 
-    str_trim()
-  res <- feols(as.formula(to_fit), data = user_period_div)
-  return(res)
-}
-
-extract_treatment_effect <- function(model){
-  require(fixest)
-  sm <- summary(model, vcov = "twoway")
-  co <- coef(sm)
-  se <- se(sm)
-  co <- co[str_detect(names(co), "c4")]
-  se <- se[str_detect(names(se), "c4")]
-  
-  result <- tibble(dependant = as.character(sm$fml)[2],
-                   treatment = names(co),
-                   treatment_effect = co,
-                   treatment_effect_se = se)
-  return(result)
-}
-
 fit_model_extract_treatment_effect <- function(user_period_div, 
                                                model_params){
   require(fixest)
@@ -76,8 +30,8 @@ fit_model_extract_treatment_effect <- function(user_period_div,
   char_div <-  model_params[[1]]$diversity[[1]]
   to_fit <- str_glue("{char_div} ~ {char_treatment} + log(total_play_l) {char_fe}") %>% 
     str_trim()
-  model <- feols(as.formula(to_fit), data = user_period_div)
-  sm <- summary(model, vcov = "twoway")
+  model <- feols(as.formula(to_fit), data = user_period_div, vcov = ~hashed_id)
+  sm <- summary(model)
   co <- coef(sm)
   se <- se(sm)
   co <- co[str_detect(names(co), "c4")]
@@ -91,9 +45,79 @@ fit_model_extract_treatment_effect <- function(user_period_div,
   
 }
 
+fit_bartik_model_extract_treatment_effect <- function(user_period_div, 
+                                                      model_params){
+  require(fixest)
+  div_var <- sym(model_params[[1]]$diversity[[1]])
+  
+  if( model_params[[1]]$log){
+    user_period_div <- user_period_div %>%
+      mutate({{ div_var }} := log({{ div_var }} + 1))
+  }
+  if( model_params[[1]]$scale){
+    user_period_div <- user_period_div %>%
+      mutate({{ div_var }} := scale({{ div_var }}))
+  }
+  
+  char_fe <- case_when(
+    model_params[[1]]$period_fe[[1]] &  model_params[[1]]$ind_fe[[1]] ~ "hashed_id + period",
+    model_params[[1]]$period_fe[[1]] ~ "period",
+    model_params[[1]]$ind_fe[[1]] ~ "hashed_id",
+    TRUE ~ ""
+  )
+  char_div <-  model_params[[1]]$diversity[[1]]
+  
+  
+  fit_and_extract <- function(user_period_div, char_div, char_fe, char_treatment, char_instrument){
+    to_fit <- str_glue("{char_div} ~ log(total_play_l) | {char_fe} | {char_treatment} ~ {char_instrument}") %>% 
+      str_trim()
+    
+    model <- feols(as.formula(to_fit), data = user_period_div, vcov = ~hashed_id)
+    
+    # extract F-test
+    Fstat <- fitstat(model, "ivwald1")$ivwald1$stat
+    Fpval <- fitstat(model, "ivwald1")$ivwald1$p
+    
+    sm <- summary(model)
+    co <- coef(sm)
+    se <- se(sm)
+    co <- co[str_detect(names(co), "c4")]
+    se <- se[str_detect(names(se), "c4")]
+    
+    result <- tibble(dependant = as.character(sm$fml)[2],
+                     treatment = names(co),
+                     treatment_effect = co,
+                     treatment_effect_se = se,
+                     ftest_stat = Fstat,
+                     ftest_pval = Fpval)
+    
+  }
+  
+  
+  
+  if( model_params[[1]]$treatment[[1]] == "pooled") {
+    char_treatment <- "c4_reco"
+    char_instrument <- "Z_c4_reco"
+    result <- fit_and_extract(user_period_div, char_div, char_fe, char_treatment, char_instrument)
+  } else if(model_params[[1]]$treatment[[1]] == "separate") {
+    result <- vector("list", 2)
+    char_treatment <- "c4_reco_algo"
+    char_instrument <- "Z_c4_reco_algo"
+    result[[1]] <- fit_and_extract(user_period_div, char_div, char_fe, char_treatment, char_instrument)
+    char_treatment <- "c4_edito"
+    char_instrument <- "Z_c4_edito"
+    result[[2]] <- fit_and_extract(user_period_div, char_div, char_fe, char_treatment, char_instrument)
+    result <- bind_rows(result)
+  } 
+  # }
+  return(result)
+}
+
+
 plot_treatment_effect <- function(models_coefs, 
                                   model_params, 
-                                  what = c("popularity", "general", "omnivore", "legitimacy", "acoustic", "all")){
+                                  what = c("popularity", "general", "omnivore", "legitimacy", "acoustic", "all"),
+                                  postfix = ""){
   theme_set(theme_minimal(base_size = 15))
   
   model_params <- bind_rows(model_params) %>%
@@ -128,7 +152,8 @@ plot_treatment_effect <- function(models_coefs,
 #           dependant = ifelse(inverted, paste0(dependant, "*"), dependant),
            dependant = ifelse(log, paste0(dependant, "§"), dependant),
            dependant = factor(dependant, levels = unique(dependant)),
-           treatment = recode_vars(treatment, "cleanreco") %>% 
+           treatment = str_remove(treatment, "fit_") %>% 
+             recode_vars("cleanreco") %>% 
              factor(levels = c("All", "Algorithmic", "Editorial")),
            type = factor(type, 
                          levels = c("demographics", "popularity", "acoustic", "legitimacy", "omnivore"),
@@ -137,7 +162,7 @@ plot_treatment_effect <- function(models_coefs,
                                     "Cultural hierarchies", "Variance in cultural hierarchies"))
            )
   models_coefs %>% filter(str_detect(dependant, "Share of"))
-  filename <- str_glue("output/gg_treatment_effect_{what}.pdf")
+  filename <- str_glue("output/gg_treatment_effect_{what}{postfix}.pdf")
   gg <- ggplot(models_coefs, aes(y = dependant,
                            x = treatment_effect,
                            xmin = treatment_effect - 2*treatment_effect_se,
