@@ -63,19 +63,39 @@ source(here::here("R", "common_functions.R"))
 # ---- Configuration ----------------------------------------------------------
 set.seed(20240613)
 
+# -----------------------------------------------------------------------------
+# SIZE KNOBS. Every value below can be overridden with an environment variable
+# (shown in Sys.getenv), so you can shrink the data set without editing this
+# file, e.g.:
+#     RECO_DIVERSITY_SYN_N_USERS=150 RECO_DIVERSITY_SYN_PLAYS=25 \
+#       Rscript make_synthetic_data.R
+#
+# Approx. number of stream rows (the only large table) is roughly
+#     n_users * (weeks_2019 + weeks_post) * activity * plays_lambda
+# so n_users, the week counts and plays_lambda are the levers that matter.
+#
+# Defaults are intentionally SMALL (~a few hundred thousand stream rows). They
+# rely on the synthetic-mode threshold relaxations in make_user_period_level_data
+# (min_users_per_period -> 50) and make_recoshare_instrument (>=8 weeks / >=10h
+# in 2019); keep n_users above that user threshold and weeks_2019 above the week
+# threshold or the pipeline will filter everything out.
+# -----------------------------------------------------------------------------
+geti <- function(name, default) as.integer(Sys.getenv(name, as.character(default)))
+getn <- function(name, default) as.numeric(Sys.getenv(name, as.character(default)))
+
 cfg <- list(
   realism        = tolower(Sys.getenv("RECO_DIVERSITY_SYNTHETIC_REALISM", "panel")),
-  n_users        = 1150L,   # > min_users_per_period (1000) so periods survive
-  n_artists      = 3000L,
-  n_songs        = 8000L,
-  n_clusters     = 20L,     # related-artist communities (each >=10 -> kept)
-  repertoire     = 60L,     # distinct artists a given user ever listens to
-  mbid_coverage  = 0.85,    # share of artists with a musicbrainz id
-  weeks_2019     = 24L,     # >= 20 -> Bartik baseline eligibility
-  weeks_post     = 16L,     # post-2019 periods -> instrument is defined
-  activity       = 0.98,    # P(user active in a given period)
-  plays_lambda   = 90,      # mean plays per active user-period
-  lt_mean        = 220,     # mean listening_time per play (seconds)
+  n_users        = geti("RECO_DIVERSITY_SYN_N_USERS",   300),  # a few hundred
+  n_artists      = geti("RECO_DIVERSITY_SYN_N_ARTISTS", 2000),
+  n_songs        = geti("RECO_DIVERSITY_SYN_N_SONGS",   5000),
+  n_clusters     = geti("RECO_DIVERSITY_SYN_N_CLUSTERS", 20),  # each >=10 -> kept
+  repertoire     = geti("RECO_DIVERSITY_SYN_REPERTOIRE", 50),  # artists per user
+  mbid_coverage  = getn("RECO_DIVERSITY_SYN_MBID_COVERAGE", 0.85),
+  weeks_2019     = geti("RECO_DIVERSITY_SYN_WEEKS_2019", 22),  # Bartik baseline window
+  weeks_post     = geti("RECO_DIVERSITY_SYN_WEEKS_POST", 6),   # -> instrument defined
+  activity       = getn("RECO_DIVERSITY_SYN_ACTIVITY", 0.98),  # P(active in a period)
+  plays_lambda   = getn("RECO_DIVERSITY_SYN_PLAYS", 40),       # mean plays / user-period
+  lt_mean        = getn("RECO_DIVERSITY_SYN_LT_MEAN", 220),    # listening_time fallback (s)
   region_levels  = c("FR", "OT")  # streams partitions -> dynamic branches
 )
 stopifnot(cfg$realism %in% c("panel", "structural"))
@@ -474,7 +494,9 @@ plogis <- function(x) 1 / (1 + exp(-x))
 # 4d. Generate streams cell by cell (active user-periods). Each cell emits
 # play-level rows: hashed_id, ts_listen, media_id (song), is_listened,
 # listening_time, media_type, context_4.
-message("Generating streams (", cfg$realism, " mode) ...")
+message("Generating streams (", cfg$realism, " mode); ~",
+        format(round(cfg$n_users * n_periods * cfg$activity * cfg$plays_lambda), big.mark = ","),
+        " rows expected ...")
 
 period_trend <- seq(-0.3, 0.6, length.out = n_periods)  # reco rises over time
 cells <- vector("list", cfg$n_users * n_periods)
@@ -486,7 +508,7 @@ for (ui in seq_len(cfg$n_users)) {
   theta <- user_tbl$reco_propensity[ui]
   delta <- user_tbl$breadth[ui]
   for (ti in which(active)) {
-    n_play <- max(20L, rpois(1, cfg$plays_lambda))
+    n_play <- max(5L, rpois(1, cfg$plays_lambda))
 
     if (cfg$realism == "panel") {
       # persistent, correlated structure

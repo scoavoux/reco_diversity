@@ -220,10 +220,10 @@ compute_legitimacy_diversity <- function(user_artist_per_period, artist_legitima
   return(omnivore_diversity)
 }
 
-make_user_period_level_data <- function(..., 
-                                        min_hours_played = 2, 
+make_user_period_level_data <- function(...,
+                                        min_hours_played = if (use_synthetic_data()) as.numeric(Sys.getenv("RECO_DIVERSITY_MIN_HOURS", "0.5")) else 2,
                                         min_artist_played = 1,
-                                        min_users_per_period = 1000,
+                                        min_users_per_period = if (use_synthetic_data()) as.integer(Sys.getenv("RECO_DIVERSITY_MIN_USERS_PER_PERIOD", "50")) else 1000,
                                         trim_first_week = TRUE){
   l <- list(...)
   users_raw <- l[[1]]

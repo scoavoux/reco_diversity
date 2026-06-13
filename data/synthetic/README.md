@@ -61,6 +61,44 @@ RECO_DIVERSITY_SYNTHETIC_REALISM=structural Rscript make_synthetic_data.R
 
 `set.seed(20240613)` makes generation reproducible.
 
+## Controlling the size (keep it small)
+
+All sizes are set by the `cfg` list at the top of `make_synthetic_data.R`, and
+every knob is also an environment variable so you can shrink the set without
+editing the file. The stream table is the only large one; its row count is
+roughly `n_users × (weeks_2019 + weeks_post) × activity × plays_lambda`, so
+those four knobs are the levers that matter.
+
+```sh
+# even smaller than the default ~300 users / ~330k rows:
+RECO_DIVERSITY_SYN_N_USERS=150 \
+RECO_DIVERSITY_SYN_PLAYS=25 \
+RECO_DIVERSITY_SYN_WEEKS_POST=4 \
+  Rscript make_synthetic_data.R
+```
+
+| Env var | Default | Controls |
+|---|---|---|
+| `RECO_DIVERSITY_SYN_N_USERS`     | 300  | number of users (rows scale linearly) |
+| `RECO_DIVERSITY_SYN_PLAYS`       | 40   | mean plays per active user-period (rows scale linearly) |
+| `RECO_DIVERSITY_SYN_WEEKS_2019`  | 22   | 2019 weekly periods (Bartik baseline window) |
+| `RECO_DIVERSITY_SYN_WEEKS_POST`  | 6    | post-2019 weekly periods |
+| `RECO_DIVERSITY_SYN_N_ARTISTS`   | 2000 | distinct artists |
+| `RECO_DIVERSITY_SYN_N_SONGS`     | 5000 | distinct songs |
+| `RECO_DIVERSITY_SYN_ACTIVITY`    | 0.98 | P(user active in a period) |
+| `RECO_DIVERSITY_SYN_REPERTOIRE`  | 50   | distinct artists per user |
+
+The defaults are deliberately small. They work because, **in synthetic mode
+only**, the pipeline's large-data thresholds auto-relax (real runs are
+unchanged): `make_user_period_level_data` drops the 1000-users-per-period filter
+to 50 and the 2-hours filter to 0.5, and `make_recoshare_instrument` drops the
+Bartik baseline requirement from `>20 weeks / >100 h` in 2019 to `>=8 weeks /
+>=10 h`. These too are overridable — `RECO_DIVERSITY_MIN_USERS_PER_PERIOD`,
+`RECO_DIVERSITY_MIN_HOURS`, `RECO_DIVERSITY_BASELINE_MIN_WEEKS`,
+`RECO_DIVERSITY_BASELINE_MIN_HOURS`. If you shrink `n_users` below the
+per-period threshold, or `weeks_2019` below the baseline week threshold, the
+pipeline will filter the data down to nothing, so keep them above.
+
 ## File layout (mirrors the real S3 bucket `scoavoux/`)
 
 | Key (relative to this directory)                          | Format  | Key columns |
