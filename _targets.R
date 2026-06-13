@@ -2,12 +2,17 @@
 library(targets)
 library(tarchetypes)
 
+# Single switch (see R/common_functions.R::use_synthetic_data):
+# RECO_DIVERSITY_DATA=synthetic runs the whole pipeline offline against the
+# local synthetic data set, storing intermediate targets locally instead of on
+# S3. Default (unset/"real") keeps the original S3-backed behaviour.
+.use_synthetic <- tolower(Sys.getenv("RECO_DIVERSITY_DATA", "real")) == "synthetic"
 
 tar_option_set(
   packages = c("paws", "tidyverse", "arrow"),
   format = "feather",
-  repository = "aws", 
-  repository_meta = "aws",
+  repository = if(.use_synthetic) "local" else "aws",
+  repository_meta = if(.use_synthetic) "local" else "aws",
   resources = tar_resources(
     aws = tar_resources_aws(
       endpoint = Sys.getenv("S3_ENDPOINT"),

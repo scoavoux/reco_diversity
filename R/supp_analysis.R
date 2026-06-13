@@ -231,14 +231,22 @@ plot_algorithms_use_by_genre_year <- function(user_artist_per_period, genres, .b
 
 
 plot_recommendation_use_rythms <- function(){
-  require(aws.s3)
-  data_cloud <- arrow::open_dataset(
-    source =   arrow::s3_bucket(
-      "scoavoux",
-      endpoint_override = "minio.lab.sspcloud.fr"
-    )$path("records_w3/streams/streams_short"),
-    partitioning = arrow::schema(REGION = arrow::utf8())
-  )
+  if(use_synthetic_data()){
+    # Offline mode: read the local synthetic streams dataset instead of S3.
+    data_cloud <- arrow::open_dataset(
+      source = file.path(synthetic_data_dir(), "records_w3/streams/streams_short"),
+      partitioning = arrow::schema(REGION = arrow::utf8())
+    )
+  } else {
+    require(aws.s3)
+    data_cloud <- arrow::open_dataset(
+      source =   arrow::s3_bucket(
+        "scoavoux",
+        endpoint_override = "minio.lab.sspcloud.fr"
+      )$path("records_w3/streams/streams_short"),
+      partitioning = arrow::schema(REGION = arrow::utf8())
+    )
+  }
   query <- data_cloud %>% 
     select(is_listened, ts_listen, media_type, context_4) %>% 
     filter(media_type == "song", is_listened == 1,
