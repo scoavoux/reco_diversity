@@ -314,8 +314,8 @@ make_artists_cluster <- function(){
 
 # Compute baseline for Bartik IV ------
 make_recoshare_instrument <- function(user_reco,
-                                    week_threshold = if (use_synthetic_data()) as.integer(Sys.getenv("RECO_DIVERSITY_BASELINE_MIN_WEEKS", "8")) else 20,
-                                    volume_threshold = if (use_synthetic_data()) as.numeric(Sys.getenv("RECO_DIVERSITY_BASELINE_MIN_HOURS", "10")) else 100){
+                                    week_threshold = 20,
+                                    volume_threshold = 100){
   # First, compute the baseline for each user
   # Baseline is share of reco the first year (2019)
   # We restrict the dataset to users

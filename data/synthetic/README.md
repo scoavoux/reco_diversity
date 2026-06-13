@@ -88,16 +88,28 @@ RECO_DIVERSITY_SYN_WEEKS_POST=4 \
 | `RECO_DIVERSITY_SYN_ACTIVITY`    | 0.98 | P(user active in a period) |
 | `RECO_DIVERSITY_SYN_REPERTOIRE`  | 50   | distinct artists per user |
 
-The defaults are deliberately small. They work because, **in synthetic mode
-only**, the pipeline's large-data thresholds auto-relax (real runs are
-unchanged): `make_user_period_level_data` drops the 1000-users-per-period filter
-to 50 and the 2-hours filter to 0.5, and `make_recoshare_instrument` drops the
-Bartik baseline requirement from `>20 weeks / >100 h` in 2019 to `>=8 weeks /
->=10 h`. These too are overridable — `RECO_DIVERSITY_MIN_USERS_PER_PERIOD`,
-`RECO_DIVERSITY_MIN_HOURS`, `RECO_DIVERSITY_BASELINE_MIN_WEEKS`,
-`RECO_DIVERSITY_BASELINE_MIN_HOURS`. If you shrink `n_users` below the
-per-period threshold, or `weeks_2019` below the baseline week threshold, the
-pipeline will filter the data down to nothing, so keep them above.
+The defaults are deliberately small. They work with the pipeline's
+sample-restriction thresholds, which are proper arguments to
+`make_user_period_level_data` (`min_users_per_period`, `min_hours_played`) and
+`make_recoshare_instrument` (`week_threshold`, `volume_threshold`). Their
+**defaults are the real-data values** (1000 users/period, 2 h/week, 20 weeks /
+100 h for the Bartik baseline); the **offline run passes lower values** from a
+single `analysis_params` list in `_targets.R`:
+
+```r
+analysis_params <- if (.use_synthetic) {
+  list(min_users_per_period = 50L, min_hours_played = 0.5,
+       baseline_week_threshold = 8L, baseline_volume_threshold = 10)
+} else {
+  list(min_users_per_period = 1000L, min_hours_played = 2,
+       baseline_week_threshold = 20L, baseline_volume_threshold = 100)
+}
+```
+
+If you make the synthetic data even smaller, keep `n_users` above
+`min_users_per_period` and `weeks_2019` above `baseline_week_threshold`, or the
+pipeline filters the data down to nothing — adjust the synthetic branch of
+`analysis_params` to match.
 
 ## File layout (mirrors the real S3 bucket `scoavoux/`)
 

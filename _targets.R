@@ -24,6 +24,23 @@ tar_option_set(
 
 tar_source("R")
 
+# Analysis parameters ------
+# Sample-restriction thresholds used when assembling the user x week panel and
+# the Bartik baseline. The defaults (real-data values) are the FIRST column; the
+# synthetic data set is much smaller, so the offline run uses the lower values.
+# These are passed explicitly into the targets below (no hidden magic numbers).
+analysis_params <- if (.use_synthetic) {
+  list(min_users_per_period      = 50L,    # >= this many users per period
+       min_hours_played          = 0.5,    # min hours played per user-week
+       baseline_week_threshold   = 8L,     # min 2019 weeks for a Bartik baseline
+       baseline_volume_threshold = 10)     # min 2019 hours for a Bartik baseline
+} else {
+  list(min_users_per_period      = 1000L,
+       min_hours_played          = 2,
+       baseline_week_threshold   = 20L,
+       baseline_volume_threshold = 100)
+}
+
 # List of targets ------
 list(
   ## Declares files
@@ -83,7 +100,9 @@ list(
   tar_target(user_omnivore_div,   compute_legitimacy_diversity(user_artist_per_period, artist_legitimacy)),
   tar_target(user_release_recency,compute_release_recency(user_artist_per_period, release)),
   tar_target(user_related_art_div, compute_related_artists_diversity(user_artist_per_period, artist_cluster)),
-  tar_target(user_instrument,        make_recoshare_instrument(user_reco)),
+  tar_target(user_instrument,        make_recoshare_instrument(user_reco,
+                                                               week_threshold   = analysis_params$baseline_week_threshold,
+                                                               volume_threshold = analysis_params$baseline_volume_threshold)),
   ## Put everything together
   tar_target(user_period_div,     make_user_period_level_data(user_reco,
                                                               user_artist_div,
@@ -97,7 +116,9 @@ list(
                                                               user_omnivore_div,
                                                               user_release_recency,
                                                               user_related_art_div,
-                                                              user_instrument)),
+                                                              user_instrument,
+                                                              min_users_per_period = analysis_params$min_users_per_period,
+                                                              min_hours_played     = analysis_params$min_hours_played)),
   
   ## Descriptive stats ------
   
