@@ -4,7 +4,7 @@ library(tarchetypes)
 
 
 tar_option_set(
-  packages = c("paws", "tidyverse", "arrow"),
+  packages = c("paws", "tidyverse", "arrow", "duckdb", "DBI"),
   format = "feather",
   repository = "aws", 
   repository_meta = "aws",
@@ -42,12 +42,19 @@ list(
   tar_target(acoustic_features_pca,                 make_acoustic_features_pca(acoustic_features), format = "qs"),
   tar_target(acoustic_features_pca_data,            make_acoustic_features_pca_data(acoustic_features_pca, acoustic_features)),
   tar_target(acoustic_features_with_pca,            full_join(acoustic_features, acoustic_features_pca_data)),
-  tar_target(user_song_per_period_onefile,          make_user_song_per_period_onefile(streaming_data_files,
-                                                                                      users,
-                                                                                      interval = "week"), 
-                                                    pattern = streaming_data_files),
-  tar_target(user_song_per_period,                  merge_user_song_per_period(user_song_per_period_onefile)),
-  tar_target(user_artist_per_period,                make_user_artist_per_period(user_song_per_period, items, artists_to_remove)),
+  ## DuckDB streams hot path (replaces the materialised user x song x week object).
+  ## user_artist_per_period is now computed straight from the stream parquet files,
+  ## out-of-core, without ever building user_song_per_period in R. The old
+  ## per-file map/reduce targets are kept commented for rollback.
+  # tar_target(user_song_per_period_onefile,        make_user_song_per_period_onefile(streaming_data_files,
+  #                                                                                   users,
+  #                                                                                   interval = "week"),
+  #                                                 pattern = streaming_data_files),
+  # tar_target(user_song_per_period,                merge_user_song_per_period(user_song_per_period_onefile)),
+  # tar_target(user_artist_per_period,              make_user_artist_per_period(user_song_per_period, items, artists_to_remove)),
+  tar_target(user_artist_per_period,                make_user_artist_per_period_duck(streaming_data_files,
+                                                                                     users, items, artists_to_remove,
+                                                                                     interval = "week")),
   tar_target(user_context4_onefile,                 make_user_context4_onefile(streaming_data_files),
                                                     pattern = streaming_data_files),
   # tar_target(user_genre_summary_data_prop,        make_user_genre_summary_data(user_artist_per_period_merged_artists, genres, proportion=TRUE)),
@@ -66,7 +73,9 @@ list(
   
   ## Prepare user data ------
   tar_target(user_reco,           compute_use_of_recommendations(user_artist_per_period)),
-  tar_target(user_acoustic_div,   compute_acoustic_diversity(user_song_per_period, acoustic_features_with_pca)),
+  # tar_target(user_acoustic_div, compute_acoustic_diversity(user_song_per_period, acoustic_features_with_pca)),
+  tar_target(user_acoustic_div,   compute_acoustic_diversity_duck(streaming_data_files, acoustic_features_with_pca, users,
+                                                                  interval = "week")),
   tar_target(user_artist_div,     compute_artist_diversity(user_artist_per_period)),
   tar_target(user_genre_div,      compute_genre_diversity(user_artist_per_period, genres)),
   # removed pop div: endogenous (measures fan at the end of the period)
